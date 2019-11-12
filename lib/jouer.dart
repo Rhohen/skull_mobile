@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'accueil.dart';
+import 'rejoindre.dart';
 
 class JouerPage extends StatelessWidget {
   JouerPage({Key key}) : super(key: key);
@@ -20,7 +21,12 @@ class JouerPage extends StatelessWidget {
                 child: Text('Créer partie', style: TextStyle(fontSize: 20)),
               ),
               RaisedButton(
-                onPressed: null,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RejoindrePage()),
+                  );
+                },
                 child: Text('Rejoindre partie', style: TextStyle(fontSize: 20)),
               ),
             ],

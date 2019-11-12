@@ -9,7 +9,7 @@ class WelcomePage extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           title: Text(
-            "Skull Mobile",
+            "Rejoindre Partie",
             style: TextStyle(fontSize: 20),
           ),
         ),
