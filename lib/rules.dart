@@ -17,9 +17,7 @@ class Rules extends StatelessWidget {
               textColor: Colors.white,
               color: Colors.redAccent,
               child: Text('Back to Main Page'),
-              onPressed: () {
-                // TODO
-              },
+              onPressed: () {},
             )
           ],
         ),
