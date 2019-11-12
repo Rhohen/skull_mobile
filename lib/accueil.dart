@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'rules.dart';
 import 'jouer.dart';
 
 class WelcomePage extends StatelessWidget {
@@ -27,7 +28,12 @@ class WelcomePage extends StatelessWidget {
                 child: Text('Jouer', style: TextStyle(fontSize: 20)),
               ),
               RaisedButton(
-                onPressed: null,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Rules()),
+                  );
+                },
                 child: Text('Règles', style: TextStyle(fontSize: 20)),
               ),
             ],
