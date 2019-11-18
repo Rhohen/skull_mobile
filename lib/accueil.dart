@@ -1,46 +1,41 @@
 import 'package:flutter/material.dart';
 import 'rules.dart';
 import 'jouer.dart';
+import 'lobby.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class WelcomePage extends StatelessWidget {
-  WelcomePage({Key key}) : super(key: key);
+class AccueilPage extends StatelessWidget {
+  AccueilPage({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "Skull Mobile",
-            style: TextStyle(fontSize: 20),
+    return Container(
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          RaisedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => JouerPage()),
+              );
+            },
+            child: Text('Jouer', style: TextStyle(fontSize: 20)),
           ),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              RaisedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => JouerPage()),
-                  );
-                },
-                child: Text('Jouer', style: TextStyle(fontSize: 20)),
-              ),
-              RaisedButton(
-                onPressed: () {
-                  /*Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Rules()),
-                  );*/
-                  _launchURL();
-                },
-                child: Text('Règles', style: TextStyle(fontSize: 20)),
-              ),
-            ],
+          RaisedButton(
+            onPressed: () {
+              /*Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Lobby()),
+              );*/
+              _launchURL();
+            },
+            child: Text('Règles', style: TextStyle(fontSize: 20)),
           ),
-        ));
+        ],
+      ),
+    );
   }
 
   _launchURL() async {

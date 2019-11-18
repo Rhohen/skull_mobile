@@ -8,8 +8,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Skull Mobile',
-      home: WelcomePage(),
+      title: 'Skull Mobile', // App name visible on task manager
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Skull Mobile', style: TextStyle(fontSize: 20)),
+          backgroundColor: Colors.redAccent,
+        ),
+        body: AccueilPage(),
+      ),
     );
   }
 }
