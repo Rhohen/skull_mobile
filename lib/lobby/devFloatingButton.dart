@@ -11,8 +11,6 @@ final faker = new Faker();
 class DevFloatingButton extends StatelessWidget {
   final String lobbyId;
 
-  DevFloatingButton(this.lobbyId);
-
   @override
   Widget build(BuildContext context) {
     var itemsActionBar = [
@@ -78,8 +76,7 @@ class DevFloatingButton extends StatelessWidget {
           databaseReference.child('lobbies').child(lobbyId).remove();
 
           int nbUser = faker.randomGenerator.integer(7, min: 1);
-          int ownerNumber = faker.randomGenerator.integer(nbUser, min: 1);
-
+          int ownerNumber = faker.randomGenerator.integer(nbUser, min: 0);
           for (int i = 0; i < nbUser; i++) {
             String photo = 'img/pic-' +
                 faker.randomGenerator.integer(7, min: 1).toString() +
@@ -90,11 +87,8 @@ class DevFloatingButton extends StatelessWidget {
                 ? true.toString()
                 : false.toString();
             String isOwner = false.toString();
+            if (i == ownerNumber) isOwner = true.toString();
 
-            if (i == ownerNumber) {
-              isOwner = true.toString();
-              LOGGER.log('$name is the owner');
-            }
             databaseReference.child('lobbies').child(lobbyId).push().set({
               'name': name,
               'profileImg': photo,
@@ -114,4 +108,6 @@ class DevFloatingButton extends StatelessWidget {
         duration: Duration(milliseconds: 200),
         curveAnim: Curves.ease);
   }
+
+  DevFloatingButton(this.lobbyId);
 }

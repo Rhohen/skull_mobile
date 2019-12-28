@@ -1,69 +1,158 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'userModel.dart';
+import 'dart:developer' as LOGGER;
 
 class UserCard extends StatelessWidget {
   final User user;
+  final DatabaseReference lobbyRef;
+  final BuildContext rootContext;
 
-  UserCard(this.user);
+  UserCard(this.user, this.lobbyRef, this.rootContext);
+
+  _removeUser() {
+    lobbyRef.child(user.key).remove();
+  }
+
+  _displayProfile() {}
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: Card(
-        color: (user.isOwner.toLowerCase() == 'true')
-            ? Colors.yellow[700]
-            : Colors.grey[800],
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
+    List actions = [
+      new InkWell(
+        onTap: () => AwesomeDialog(
+          context: context,
+          animType: AnimType.SCALE,
+          customHeader: Container(
+              width: 100.0,
+              height: 100.0,
+              decoration: new BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: new DecorationImage(
+                      fit: BoxFit.cover, image: AssetImage(user.profileImg)))),
+          tittle: user.name,
+          desc: 'My name is ${user.name} and i\'m top ${user.rank}',
+          btnOk: FlatButton(
+            shape: RoundedRectangleBorder(
+                borderRadius: new BorderRadius.circular(18.0),
+                side: BorderSide(color: Colors.grey)),
+            child: Text('Close'),
+            onPressed: () {
+              Navigator.of(rootContext).pop();
+            },
+          ),
+          //this is ignored
+          btnOkOnPress: () {},
+        ).show(),
+        child: new Container(
+          decoration: new BoxDecoration(
+            color: Colors.blueAccent,
+            borderRadius: new BorderRadius.circular(10.0),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                new Icon(Icons.person, color: Colors.white),
+                new Text("Profile",
+                    style: Theme.of(context)
+                        .primaryTextTheme
+                        .caption
+                        .copyWith(color: Colors.white)),
+              ],
+            ),
+          ),
+        ),
+      )
+    ];
+
+    // if (isOwner)
+    actions.add(new InkWell(
+      onTap: _removeUser,
+      child: new Container(
+        decoration: new BoxDecoration(
+          color: Colors.redAccent,
+          borderRadius: new BorderRadius.circular(10.0),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                    width: 50.0,
-                    height: 50.0,
-                    decoration: new BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: new DecorationImage(
-                            fit: BoxFit.cover,
-                            image: AssetImage(user.profileImg)))),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    user.name,
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  Text(
-                    'top ${user.rank}',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
-                  )
-                ],
-              ),
-              Spacer(),
-              RawMaterialButton(
-                onPressed: null,
-                child: new Icon(
-                  (user.isReady.toLowerCase() == 'true')
-                      ? Icons.check
-                      : Icons
-                          .close, // TODO: mettre en jaune l'owner + voir si ya pas moyen de le rajouter au niveau du lobby
-                  color: Colors.white,
-                  size: 35.0,
-                ),
-                shape: new CircleBorder(),
-                elevation: 2.0,
-                fillColor: (user.isReady.toLowerCase() == 'true')
-                    ? Colors.green
-                    : Colors.redAccent,
-                padding: const EdgeInsets.all(15.0),
-              ),
+              new Icon(Icons.exit_to_app, color: Colors.white),
+              new Text("Eject",
+                  style: Theme.of(context)
+                      .primaryTextTheme
+                      .caption
+                      .copyWith(color: Colors.white)),
             ],
           ),
         ),
       ),
+    ));
+
+    return Container(
+      margin: const EdgeInsets.all(4),
+      child: Slidable(
+        actionPane: SlidableBehindActionPane(),
+        enabled: true,
+        actions: <Widget>[...actions],
+        key: new ObjectKey(user.key),
+        child: Container(
+          decoration: new BoxDecoration(
+              color: (user.isOwner.toLowerCase() == 'true')
+                  ? Colors.orange[300]
+                  : Colors.grey[800],
+              borderRadius: new BorderRadius.all(Radius.circular(10.0))),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                      width: 50.0,
+                      height: 50.0,
+                      decoration: new BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: new DecorationImage(
+                              fit: BoxFit.cover,
+                              image: AssetImage(user.profileImg)))),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      user.name,
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                    Text(
+                      'top ${user.rank}',
+                      style: TextStyle(color: Colors.white, fontSize: 12),
+                    )
+                  ],
+                ),
+                Spacer(),
+                MaterialButton(
+                  onPressed: null,
+                  child: (user.isReady.toLowerCase() == 'true')
+                      ? new Icon(Icons.check, color: Colors.green, size: 35.0)
+                      : new Icon(Icons.close,
+                          color: Colors.redAccent, size: 35.0),
+                  shape: new CircleBorder(),
+                  elevation: 2.0,
+                  padding: const EdgeInsets.all(15.0),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
+  }
+
+  showDebugPrint() {
+    debugPrint('Print from Callback Function');
   }
 }

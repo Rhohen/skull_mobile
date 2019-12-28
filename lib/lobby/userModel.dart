@@ -9,10 +9,11 @@ class User {
   String isReady;
   String isOwner;
 
-  User(this.name, this.profileImg, this.rank, this.isReady, this.isOwner);
+  User(this.key, this.name, this.profileImg, this.rank, this.isReady,
+      this.isOwner);
 
   factory User.from(Map<String, dynamic> json) {
-    return new User(json['name'], json['profileImg'], json['rank'],
+    return new User(json['key'], json['name'], json['profileImg'], json['rank'],
         json['isReady'], json['isOwner']);
   }
 
@@ -23,4 +24,14 @@ class User {
         rank = snapshot.value['rank'],
         isReady = snapshot.value['isReady'],
         isOwner = snapshot.value['isOwner'];
+
+  toJson() {
+    return {
+      "name": name,
+      "profileImg": profileImg,
+      "rank": rank,
+      "isReady": isReady,
+      "isOwner": isOwner
+    };
+  }
 }

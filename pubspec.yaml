@@ -28,6 +28,8 @@ dependencies:
   page_transition: ^1.1.5
   radial_button: ^0.1.1
   faker: ^1.1.1
+  flutter_slidable: ^0.5.4
+  awesome_dialog: ^0.1.0
 
 dev_dependencies:
   flutter_test:
