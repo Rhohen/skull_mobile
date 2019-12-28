@@ -11,7 +11,9 @@ class UserCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Card(
-        color: Colors.grey[800],
+        color: (user.isOwner.toLowerCase() == 'true')
+            ? Colors.yellow[700]
+            : Colors.grey[800],
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
@@ -35,11 +37,29 @@ class UserCard extends StatelessWidget {
                     style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
                   Text(
-                    user.rank,
+                    'top ${user.rank}',
                     style: TextStyle(color: Colors.white, fontSize: 12),
                   )
                 ],
-              )
+              ),
+              Spacer(),
+              RawMaterialButton(
+                onPressed: null,
+                child: new Icon(
+                  (user.isReady.toLowerCase() == 'true')
+                      ? Icons.check
+                      : Icons
+                          .close, // TODO: mettre en jaune l'owner + voir si ya pas moyen de le rajouter au niveau du lobby
+                  color: Colors.white,
+                  size: 35.0,
+                ),
+                shape: new CircleBorder(),
+                elevation: 2.0,
+                fillColor: (user.isReady.toLowerCase() == 'true')
+                    ? Colors.green
+                    : Colors.redAccent,
+                padding: const EdgeInsets.all(15.0),
+              ),
             ],
           ),
         ),

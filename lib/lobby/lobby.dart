@@ -26,6 +26,40 @@ class _Lobby extends State<Lobby> {
     super.initState();
     final FirebaseDatabase database = FirebaseDatabase.instance;
     lobbyRef = database.reference().child('lobbies').child(lobbyId);
+    //lobbyRef.onChildAdded.listen(_onEntryAddedUser);
+    //lobbyRef.onChildChanged.listen(_onEntryChangedUser);
+    lobbyRef.onChildRemoved.listen(_onEntryRemovedUser);
+    //lobbyRef.onChildMoved.listen(_onChildMovedUser);
+  }
+
+  bool _isUserOwner(String key) {
+    assert(key != null);
+    /*
+    for (int index = 0; index < usersCopy.length; index++) {
+      User user = usersCopy[index];
+      if (key == user.key) {
+        return user.isOwner.toLowerCase() == 'true';
+      }
+    }*/
+    return false;
+  }
+
+  _onEntryRemovedUser(Event event) {
+    if (this.mounted) {
+      bool isOwner = _isUserOwner(event.snapshot.key);
+      /*if (isOwner) {
+        lobbyRef.once().then(
+          (DataSnapshot snapshot) {
+            if (snapshot != null && snapshot.value != null) {
+              Map lobbyMap = new Map<String, dynamic>.from(snapshot.value);
+              String firstKey = lobbyMap.entries.first.key;
+              if (firstKey != null) lobbyRef.child(firstKey).remove();
+            }
+          },
+        );
+        lobbyRef.child(ssss.key).set(ssss.toJson());
+      }*/
+    }
   }
 
   @override
@@ -42,14 +76,14 @@ class _Lobby extends State<Lobby> {
                 !snap.hasError &&
                 snap.data.snapshot.value != null) {
               Map data = snap.data.snapshot.value;
-              List item = [];
+              List users = [];
 
-              data.forEach((index, data) => item.add({"key": index, ...data}));
+              data.forEach((index, data) => users.add({"key": index, ...data}));
 
               return ListView.builder(
-                itemCount: item.length,
+                itemCount: users.length,
                 itemBuilder: (context, index) {
-                  Map userData = new Map<String, dynamic>.from(item[index]);
+                  Map userData = new Map<String, dynamic>.from(users[index]);
                   User user = User.from(userData);
                   return UserCard(user);
                 },
@@ -60,7 +94,7 @@ class _Lobby extends State<Lobby> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     SpinKitPouringHourglass(color: Colors.grey[800]),
-                    Text("Waiting for players.."),
+                    Text("Waiting for players to join.."),
                   ],
                 ),
               );

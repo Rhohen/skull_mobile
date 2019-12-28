@@ -54,14 +54,20 @@ class DevFloatingButton extends StatelessWidget {
           String photo = 'img/pic-' +
               faker.randomGenerator.integer(7, min: 1).toString() +
               '.png';
-          String name = faker.person.name();
+          String name = faker.person.firstName();
           String rank = faker.randomGenerator.integer(101, min: 1).toString();
+          String isReady = (faker.randomGenerator.integer(3, min: 1) == 1)
+              ? true.toString()
+              : false.toString();
+          String isOwner = false.toString();
 
-          databaseReference
-              .child('lobbies')
-              .child(lobbyId)
-              .push()
-              .set({'name': name, 'profileImg': photo, 'rank': rank});
+          databaseReference.child('lobbies').child(lobbyId).push().set({
+            'name': name,
+            'profileImg': photo,
+            'rank': rank,
+            'isReady': isReady,
+            'isOwner': isOwner
+          });
         },
         child: Icon(Icons.add),
       ),
@@ -72,19 +78,30 @@ class DevFloatingButton extends StatelessWidget {
           databaseReference.child('lobbies').child(lobbyId).remove();
 
           int nbUser = faker.randomGenerator.integer(7, min: 1);
+          int ownerNumber = faker.randomGenerator.integer(nbUser, min: 1);
 
           for (int i = 0; i < nbUser; i++) {
             String photo = 'img/pic-' +
                 faker.randomGenerator.integer(7, min: 1).toString() +
                 '.png';
-            String name = faker.person.name();
+            String name = faker.person.firstName();
             String rank = faker.randomGenerator.integer(101, min: 1).toString();
+            String isReady = (faker.randomGenerator.integer(3, min: 1) == 1)
+                ? true.toString()
+                : false.toString();
+            String isOwner = false.toString();
 
-            databaseReference
-                .child('lobbies')
-                .child(lobbyId)
-                .push()
-                .set({'name': name, 'profileImg': photo, 'rank': rank});
+            if (i == ownerNumber) {
+              isOwner = true.toString();
+              LOGGER.log('$name is the owner');
+            }
+            databaseReference.child('lobbies').child(lobbyId).push().set({
+              'name': name,
+              'profileImg': photo,
+              'rank': rank,
+              'isReady': isReady,
+              'isOwner': isOwner
+            });
           }
         },
         child: Icon(Icons.people),
