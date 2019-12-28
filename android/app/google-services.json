@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "889883798871",
+    "firebase_url": "https://skullproject-37b5f.firebaseio.com",
+    "project_id": "skullproject-37b5f",
+    "storage_bucket": "skullproject-37b5f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889883798871:android:5df4fa1e2b9da5db16e212",
+        "android_client_info": {
+          "package_name": "com.example.skull_mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "889883798871-94mqesqbkdelktac1atj7go7dqc5q0j4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCERjFxj5u1KaZL_I7u0_XrWOO5QJYwv30"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "889883798871-94mqesqbkdelktac1atj7go7dqc5q0j4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

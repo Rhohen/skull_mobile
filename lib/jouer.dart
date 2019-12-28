@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'accueil.dart';
+import 'lobby/lobby.dart';
 
 class JouerPage extends StatelessWidget {
   JouerPage({Key key}) : super(key: key);
@@ -20,7 +22,16 @@ class JouerPage extends StatelessWidget {
                 child: Text('Créer partie', style: TextStyle(fontSize: 20)),
               ),
               RaisedButton(
-                onPressed: null,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    PageTransition(
+                      type: PageTransitionType.fade,
+                      child: Lobby(
+                          "-Lx7KJcaKvlwpe2z2dEp"), // TODO: Nico c'est à la classe Lobby que tu fileras l'id du salon pour le rejoindre
+                    ),
+                  );
+                },
                 child: Text('Rejoindre partie', style: TextStyle(fontSize: 20)),
               ),
             ],

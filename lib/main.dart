@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(
           title: Text('Skull Mobile', style: TextStyle(fontSize: 20)),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: Colors.grey[800],
         ),
         body: AccueilPage(),
       ),
