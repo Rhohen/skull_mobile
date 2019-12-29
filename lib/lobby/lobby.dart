@@ -1,8 +1,8 @@
-import 'package:awesome_dialog/animated_button.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:skull_mobile/game/game.dart';
 import 'package:skull_mobile/jouer.dart';
 import 'package:skull_mobile/lobby/devFloatingButton.dart';
 import 'userModel.dart';
@@ -12,6 +12,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'dart:developer' as LOGGER;
 
 class Lobby extends StatefulWidget {
+  static const routeName = '/Lobby';
+
   final String lobbyId;
   final User currentUser;
   final BuildContext lobbiesContext;
@@ -38,9 +40,15 @@ class _Lobby extends State<Lobby> {
 
     lobbyRef = database.reference().child('lobbies').child(lobbyId);
 
-    var generatedReference = lobbyRef.push();
-    currentUser.key = generatedReference.key;
-    generatedReference.set(currentUser.toJson());
+    lobbyRef.once().then((DataSnapshot snapshot) {
+      if (snapshot != null && snapshot.value == null) {
+        currentUser.isOwner = 'true';
+      }
+      var generatedReference = lobbyRef.push();
+      currentUser.key = generatedReference.key;
+      generatedReference.set(currentUser.toJson());
+      setState(() {});
+    });
 
     lobbyRef.onChildAdded.listen(_onEntryAddedUser);
     lobbyRef.onChildChanged.listen(_onEntryChangedUser);
@@ -52,9 +60,13 @@ class _Lobby extends State<Lobby> {
 
   _onEntryChangedUser(Event event) {
     if (this.mounted) {
-      if (event.snapshot != null &&
-          currentUser != null &&
-          currentUser.key == event.snapshot.key) setState(() {});
+      if (event.snapshot != null && currentUser != null) {
+        if (currentUser.key == event.snapshot.key) {
+          Map userData = new Map<String, dynamic>.from(event.snapshot.value);
+          currentUser.copyFrom(User.from(userData));
+        }
+        setState(() {});
+      }
     }
   }
 
@@ -68,14 +80,6 @@ class _Lobby extends State<Lobby> {
         btnCancelOnPress: () {},
         btnOkOnPress: () {
           lobbyRef.child(currentUser.key).remove();
-          // FIXME: Il va falloir trouver un moyen de gérer la navigation plus proprement, actuellement ça s'ajoute à l'infini
-          Navigator.pop(
-            context,
-            PageTransition(
-              type: PageTransitionType.fade,
-              child: JouerPage(),
-            ),
-          );
         }).show();
   }
 
@@ -84,72 +88,40 @@ class _Lobby extends State<Lobby> {
       if (event.snapshot != null &&
           currentUser != null &&
           currentUser.key == event.snapshot.key) {
-        // FIXME: Il va falloir trouver un moyen de gérer la navigation plus proprement, actuellement ça s'ajoute à l'infini
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => JouerPage()));
+        if (currentUser.isOwner == 'true') {
+          lobbyRef.once().then(
+            (DataSnapshot snapshot) {
+              if (snapshot != null &&
+                  snapshot.value != null &&
+                  snapshot.value is Map<dynamic, dynamic>) {
+                Map lobbyMap = new Map<String, dynamic>.from(snapshot.value);
+                lobbyMap.removeWhere((k, v) => k == currentUser.key);
+                if (lobbyMap.entries.length > 0) {
+                  Map userData = new Map<String, dynamic>.from(
+                      lobbyMap.entries.first.value);
+                  User user = User.from(userData);
+                  user.isOwner = 'true';
+                  lobbyRef.child(lobbyMap.entries.first.key).set(user.toJson());
+                }
+              }
+            },
+          );
+        }
+        Navigator.popUntil(context, ModalRoute.withName(JouerPage.routeName));
       }
     }
   }
 
   _onChildMovedUser(Event event) {}
 
-  //TODO : Ce sera possible de gérer l'attribution automatique du isOwner (Dans un salon vide ou lorsque l'owner part) lorsqu'il y aura eu la mise en place de sessions
-/*
-  bool _isUserOwner(String key) {
-    assert(key != null);
-    for (int index = 0; index < users.length; index++) {
-      Map userData = new Map<String, dynamic>.from(users[index]);
-      User user = User.from(userData);
-      if (key == user.key) {
-        return user.isOwner.toLowerCase() == 'true';
-      }
-    }
-    return false;
+  bool _isUserCorrect(User user) {
+    return user != null &&
+        user.isOwner != null &&
+        user.isReady != null &&
+        user.name != null &&
+        user.rank != null &&
+        user.profileImg != null;
   }
-
-  bool _isLobbyEmpty() {
-    LOGGER.log("lobby : ${users.length <= 1}");
-    return users.length <= 1;
-  }
-
-  _onEntryRemovedUser(Event event) {
-    if (this.mounted) {
-      bool isOwner = _isUserOwner(event.snapshot.key);
-      if (isOwner) {
-        lobbyRef.once().then(
-          (DataSnapshot snapshot) {
-            if (snapshot != null && snapshot.value != null) {
-              Map lobbyMap = new Map<String, dynamic>.from(snapshot.value);
-              lobbyMap.removeWhere((k, v) {
-                return k == event.snapshot.key;
-              });
-
-              String firstKey = lobbyMap.keys.first;
-              if (firstKey != null) {
-                Map userData =
-                    new Map<String, dynamic>.from(lobbyMap[firstKey]);
-                User user = User.from(userData);
-                user.isOwner = true.toString();
-                lobbyRef.child(firstKey).set(user.toJson());
-              }
-            }
-          },
-        );
-      }
-    }
-  }
-
-  _onEntryAddedUser(Event event) {
-    if (this.mounted) {
-      if (_isLobbyEmpty()) {
-        Map userData = new Map<String, dynamic>.from(event.snapshot.value);
-        User user = User.from(userData);
-        user.isOwner = true.toString();
-        lobbyRef.child(event.snapshot.key).set(user.toJson());
-      }
-    }
-  }
-*/
 
   @override
   Widget build(BuildContext ctx) {
@@ -161,10 +133,15 @@ class _Lobby extends State<Lobby> {
           backgroundColor: Colors.grey[800],
         ),
         body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Container(
+              padding: EdgeInsets.only(top: 8),
               color: /*Colors.grey[400]*/ Colors.white,
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Expanded(
                     child: UserCard(currentUser, lobbyRef, ctx, currentUser),
@@ -184,13 +161,14 @@ class _Lobby extends State<Lobby> {
                             color: Colors.white, size: 35.0),
                     shape: new CircleBorder(),
                     elevation: 2.0,
-                    padding: const EdgeInsets.all(15.0),
+                    padding: EdgeInsets.all(12),
                   ),
                 ],
               ),
             ),
             Divider(
-              color: Colors.grey[800],
+              indent: 15,
+              endIndent: 15,
             ),
             Expanded(
               child: StreamBuilder(
@@ -200,28 +178,71 @@ class _Lobby extends State<Lobby> {
                       !snap.hasError &&
                       snap.data.snapshot.value != null) {
                     Map data = snap.data.snapshot.value;
+
+                    // This list will contain every user except current user
                     users = [];
 
+                    int numberOfReady = 0;
                     data.forEach((index, data) {
-                      Map userData = new Map<String, dynamic>.from(
-                          {"key": index, ...data});
-                      User user = User.from(userData);
-                      if (user != null && user.key != currentUser.key) {
-                        users.add(user);
+                      if (data is Map<dynamic, dynamic>) {
+                        Map userData = new Map<String, dynamic>.from(
+                            {"key": index, ...data});
+
+                        User user = User.from(userData);
+                        if (_isUserCorrect(user)) {
+                          if (user.key != currentUser.key) users.add(user);
+                          if (user.isReady == 'true') numberOfReady++;
+                        } else {
+                          lobbyRef.child(user.key).remove();
+                        }
                       }
                     });
+
                     // If there is not only the currentUser
                     if (users.length > 0) {
-                      return ListView.builder(
-                        itemCount: users.length,
-                        itemBuilder: (context, index) {
-                          return UserCard(
-                              users[index], lobbyRef, ctx, currentUser);
-                        },
+                      List<Widget> listUnderCurrentUser = [];
+
+                      // Minimum 2 players and everybody is ready
+                      if (numberOfReady == users.length + 1 &&
+                          users.length >= 1) {
+                        listUnderCurrentUser.add(
+                          FlatButton(
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: new BorderRadius.circular(18.0),
+                                side: BorderSide(color: Colors.green)),
+                            child: Text('Start the game'),
+                            color: Colors.green,
+                            textTheme: ButtonTextTheme.primary,
+                            onPressed: () {
+                              Navigator.popAndPushNamed(
+                                  context, GamePage.routeName);
+                            },
+                          ),
+                        );
+                        listUnderCurrentUser.add(
+                          SizedBox(height: 8),
+                        );
+                      }
+
+                      listUnderCurrentUser.add(Expanded(
+                        child: ListView.builder(
+                          itemCount: users.length,
+                          itemBuilder: (context, index) {
+                            return UserCard(
+                                users[index], lobbyRef, ctx, currentUser);
+                          },
+                        ),
+                      ));
+
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[...listUnderCurrentUser],
                       );
                     }
                   }
-
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

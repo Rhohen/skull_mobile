@@ -1,14 +1,13 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:page_transition/page_transition.dart';
-import 'rules.dart';
 import 'jouer.dart';
-import 'lobby/lobby.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final databaseReference = FirebaseDatabase.instance.reference();
 
 class AccueilPage extends StatelessWidget {
+  static const routeName = '/AccueilPage';
+
   AccueilPage({Key key}) : super(key: key);
 
   @override
@@ -20,21 +19,12 @@ class AccueilPage extends StatelessWidget {
         children: <Widget>[
           RaisedButton(
             onPressed: () {
-              Navigator.push(
-                  context,
-                  PageTransition(
-                      type: PageTransitionType.fade, child: JouerPage()));
+              Navigator.pushNamed(context, JouerPage.routeName);
             },
             child: Text('Jouer', style: TextStyle(fontSize: 20)),
           ),
           RaisedButton(
             onPressed: () {
-              /*
-              Navigator.push(
-                  context,
-                  PageTransition(
-                      type: PageTransitionType.fade,
-                      child: Lobby("-Lx7KJcaKvlwpe2z2dEp")));*/
               _launchURL();
             },
             child: Text('Règles', style: TextStyle(fontSize: 20)),

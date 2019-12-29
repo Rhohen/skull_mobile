@@ -44,4 +44,12 @@ class User {
         '.png';
     return new User("-1", name, photo, "-1", "false", "false");
   }
+
+  void copyFrom(User user) {
+    this.isReady = user.isReady;
+    this.isOwner = user.isOwner;
+    this.profileImg = user.profileImg;
+    this.rank = user.rank;
+    this.name = user.name;
+  }
 }

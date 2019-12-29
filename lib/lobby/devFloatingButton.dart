@@ -84,9 +84,9 @@ class DevFloatingButton extends StatelessWidget {
           String name = faker.person.firstName();
           String rank = faker.randomGenerator.integer(101, min: 1).toString();
           String isReady = (faker.randomGenerator.integer(3, min: 1) == 1)
-              ? true.toString()
-              : false.toString();
-          String isOwner = false.toString();
+              ? 'true'
+              : 'false';
+          String isOwner = 'false';
 
           databaseReference.child('lobbies').child(lobbyId).push().set({
             'name': name,
@@ -133,10 +133,10 @@ class DevFloatingButton extends StatelessWidget {
               String rank =
                   faker.randomGenerator.integer(101, min: 1).toString();
               String isReady = (faker.randomGenerator.integer(3, min: 1) == 1)
-                  ? true.toString()
-                  : false.toString();
-              String isOwner = false.toString();
-              if (i == ownerNumber) isOwner = true.toString();
+                  ? 'true'
+                  : 'false';
+              String isOwner = 'false';
+              if (i == ownerNumber) isOwner = 'true';
 
               databaseReference.child('lobbies').child(lobbyId).push().set({
                 'name': name,

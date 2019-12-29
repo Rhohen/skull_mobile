@@ -17,8 +17,6 @@ class UserCard extends StatelessWidget {
     lobbyRef.child(user.key).remove();
   }
 
-  _displayProfile() {}
-
   @override
   Widget build(BuildContext context) {
     List actions = [
@@ -149,12 +147,12 @@ class UserCard extends StatelessWidget {
 
     if (user.key == currentUser.key) {
       return Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.only(left: 8),
         child: cardComponent,
       );
     } else {
       return Container(
-        margin: const EdgeInsets.all(4),
+        margin: const EdgeInsets.only(left: 8, bottom: 8, right: 8),
         child: Slidable(
           actionPane: SlidableBehindActionPane(),
           enabled: true,

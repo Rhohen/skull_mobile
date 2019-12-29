@@ -1,13 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:skull_mobile/game/game.dart';
+import 'package:skull_mobile/jouer.dart';
+import 'package:skull_mobile/lobby/lobby.dart';
+import 'package:skull_mobile/lobby/lobbyArguments.dart';
 import 'accueil.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+  static const routeName = '/root';
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case JouerPage.routeName:
+            return PageTransition(
+              child: JouerPage(),
+              type: PageTransitionType.fade,
+              settings: settings,
+            );
+            break;
+          case Lobby.routeName:
+            LobbyArguments lobbyArguments = settings.arguments;
+            return PageTransition(
+              child: Lobby(lobbyArguments.lobbyId, lobbyArguments.currentUser,
+                  lobbyArguments.lobbiesContext),
+              type: PageTransitionType.fade,
+              settings: settings,
+            );
+            break;
+          case GamePage.routeName:
+            return PageTransition(
+              child: GamePage(),
+              type: PageTransitionType.fade,
+              settings: settings,
+            );
+            break;
+          default:
+            return null;
+        }
+      },
       title: 'Skull Mobile', // App name visible on task manager
       home: Scaffold(
         appBar: AppBar(
