@@ -45,6 +45,9 @@ class StarsAnimationState extends State<GamePage>
       vsync: this,
     );
     _startBobAnimation();
+    _slowAnimationController.repeat().orCancel;
+    _mdSpeedAnimationController.repeat().orCancel;
+    _fastAnimationController.repeat().orCancel;
   }
 
   _startBobAnimation() {

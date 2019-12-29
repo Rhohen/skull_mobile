@@ -1,7 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:skull_mobile/game/game.dart';
 import 'package:skull_mobile/jouer.dart';
 import 'package:skull_mobile/lobby/devFloatingButton.dart';
@@ -131,6 +130,19 @@ class _Lobby extends State<Lobby> {
         appBar: AppBar(
           title: Text('Lobby Page', style: TextStyle(fontSize: 20)),
           backgroundColor: Colors.grey[800],
+          leading: new IconButton(
+            icon: new Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => AwesomeDialog(
+                context: context,
+                dialogType: DialogType.WARNING,
+                animType: AnimType.TOPSLIDE,
+                tittle: 'Are you sure?',
+                desc: 'You are going to exit the lobby.',
+                btnCancelOnPress: () {},
+                btnOkOnPress: () {
+                  lobbyRef.child(currentUser.key).remove();
+                }).show(),
+          ),
         ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
