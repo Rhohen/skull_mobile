@@ -55,6 +55,22 @@ class _Lobby extends State<Lobby> {
     lobbyRef.onChildMoved.listen(_onChildMovedUser);
   }
 
+  void _launchGame() {
+    lobbyRef.once().then((DataSnapshot snapshot) {
+      if (snapshot != null && snapshot.value != null) {
+        Map lobbyMap = new Map<String, dynamic>.from(snapshot.value);
+        if (lobbyMap.entries.length > 0) {
+          lobbyMap.entries.forEach((entry) {
+            Map userData = new Map<String, dynamic>.from(entry.value);
+            User userToUpdate = User.from(userData);
+            userToUpdate.startGame = 'true';
+            lobbyRef.child(entry.key).set(userToUpdate.toJson());
+          });
+        }
+      }
+    });
+  }
+
   _onEntryAddedUser(Event event) {}
 
   _onEntryChangedUser(Event event) {
@@ -65,6 +81,9 @@ class _Lobby extends State<Lobby> {
           currentUser.copyFrom(User.from(userData));
         }
         setState(() {});
+        if (currentUser.startGame == 'true') {
+          Navigator.popAndPushNamed(context, GamePage.routeName);
+        }
       }
     }
   }
@@ -227,10 +246,7 @@ class _Lobby extends State<Lobby> {
                             child: Text('Start the game'),
                             color: Colors.green,
                             textTheme: ButtonTextTheme.primary,
-                            onPressed: () {
-                              Navigator.popAndPushNamed(
-                                  context, GamePage.routeName);
-                            },
+                            onPressed: _launchGame,
                           ),
                         );
                         listUnderCurrentUser.add(

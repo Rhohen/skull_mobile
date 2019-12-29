@@ -93,7 +93,8 @@ class DevFloatingButton extends StatelessWidget {
             'profileImg': photo,
             'rank': rank,
             'isReady': isReady,
-            'isOwner': isOwner
+            'isOwner': isOwner,
+            'startGame': 'false'
           });
         },
         child: Icon(Icons.add),
@@ -143,7 +144,8 @@ class DevFloatingButton extends StatelessWidget {
                 'profileImg': photo,
                 'rank': rank,
                 'isReady': isReady,
-                'isOwner': isOwner
+                'isOwner': isOwner,
+                'startGame': 'false'
               });
             }
           });
