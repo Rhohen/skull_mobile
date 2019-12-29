@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:skull_mobile/lobby/userModel.dart';
 import 'accueil.dart';
 import 'lobby/lobby.dart';
 
@@ -28,7 +29,9 @@ class JouerPage extends StatelessWidget {
                     PageTransition(
                       type: PageTransitionType.fade,
                       child: Lobby(
-                          "-Lx7KJcaKvlwpe2z2dEp"), // TODO: Nico c'est à la classe Lobby que tu fileras l'id du salon pour le rejoindre
+                          "-Lx7KJcaKvlwpe2z2dEp",
+                          User.generate("admin"),
+                          context), // TODO: Nico c'est à la classe Lobby que tu fileras l'id du salon pour le rejoindre
                     ),
                   );
                 },

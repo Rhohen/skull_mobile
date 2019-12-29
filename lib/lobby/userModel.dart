@@ -1,5 +1,8 @@
+import 'package:faker/faker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/src/widgets/framework.dart';
+
+final faker = new Faker();
 
 class User {
   String key;
@@ -33,5 +36,12 @@ class User {
       "isReady": isReady,
       "isOwner": isOwner
     };
+  }
+
+  factory User.generate(String name) {
+    String photo = 'img/pic-' +
+        faker.randomGenerator.integer(7, min: 1).toString() +
+        '.png';
+    return new User("-1", name, photo, "-1", "false", "false");
   }
 }

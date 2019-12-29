@@ -7,10 +7,11 @@ import 'dart:developer' as LOGGER;
 
 class UserCard extends StatelessWidget {
   final User user;
+  final User currentUser;
   final DatabaseReference lobbyRef;
-  final BuildContext rootContext;
+  final BuildContext lobbyContext;
 
-  UserCard(this.user, this.lobbyRef, this.rootContext);
+  UserCard(this.user, this.lobbyRef, this.lobbyContext, this.currentUser);
 
   _removeUser() {
     lobbyRef.child(user.key).remove();
@@ -26,12 +27,16 @@ class UserCard extends StatelessWidget {
           context: context,
           animType: AnimType.SCALE,
           customHeader: Container(
-              width: 100.0,
-              height: 100.0,
-              decoration: new BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: new DecorationImage(
-                      fit: BoxFit.cover, image: AssetImage(user.profileImg)))),
+            width: 100.0,
+            height: 100.0,
+            decoration: new BoxDecoration(
+              shape: BoxShape.circle,
+              image: new DecorationImage(
+                fit: BoxFit.cover,
+                image: AssetImage(user.profileImg),
+              ),
+            ),
+          ),
           tittle: user.name,
           desc: 'My name is ${user.name} and i\'m top ${user.rank}',
           btnOk: FlatButton(
@@ -40,7 +45,7 @@ class UserCard extends StatelessWidget {
                 side: BorderSide(color: Colors.grey)),
             child: Text('Close'),
             onPressed: () {
-              Navigator.of(rootContext).pop();
+              Navigator.of(lobbyContext).pop();
             },
           ),
           //this is ignored
@@ -68,88 +73,97 @@ class UserCard extends StatelessWidget {
       )
     ];
 
-    // if (isOwner)
-    actions.add(new InkWell(
-      onTap: _removeUser,
-      child: new Container(
-        decoration: new BoxDecoration(
-          color: Colors.redAccent,
-          borderRadius: new BorderRadius.circular(10.0),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              new Icon(Icons.exit_to_app, color: Colors.white),
-              new Text("Eject",
-                  style: Theme.of(context)
-                      .primaryTextTheme
-                      .caption
-                      .copyWith(color: Colors.white)),
-            ],
-          ),
-        ),
-      ),
-    ));
-
-    return Container(
-      margin: const EdgeInsets.all(4),
-      child: Slidable(
-        actionPane: SlidableBehindActionPane(),
-        enabled: true,
-        actions: <Widget>[...actions],
-        key: new ObjectKey(user.key),
-        child: Container(
+    if (currentUser.isOwner == 'true' ||
+        currentUser.name.toLowerCase() == 'admin') {
+      actions.add(new InkWell(
+        onTap: _removeUser,
+        child: new Container(
           decoration: new BoxDecoration(
-              color: (user.isOwner.toLowerCase() == 'true')
-                  ? Colors.orange[300]
-                  : Colors.grey[800],
-              borderRadius: new BorderRadius.all(Radius.circular(10.0))),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
+            color: Colors.redAccent,
+            borderRadius: new BorderRadius.circular(10.0),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                      width: 50.0,
-                      height: 50.0,
-                      decoration: new BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: new DecorationImage(
-                              fit: BoxFit.cover,
-                              image: AssetImage(user.profileImg)))),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      user.name,
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                    Text(
-                      'top ${user.rank}',
-                      style: TextStyle(color: Colors.white, fontSize: 12),
-                    )
-                  ],
-                ),
-                Spacer(),
-                MaterialButton(
-                  onPressed: null,
-                  child: (user.isReady.toLowerCase() == 'true')
-                      ? new Icon(Icons.check, color: Colors.green, size: 35.0)
-                      : new Icon(Icons.close,
-                          color: Colors.redAccent, size: 35.0),
-                  shape: new CircleBorder(),
-                  elevation: 2.0,
-                  padding: const EdgeInsets.all(15.0),
-                ),
+                new Icon(Icons.exit_to_app, color: Colors.white),
+                new Text("Eject",
+                    style: Theme.of(context)
+                        .primaryTextTheme
+                        .caption
+                        .copyWith(color: Colors.white)),
               ],
             ),
           ),
         ),
+      ));
+    }
+    Widget cardComponent = Container(
+      decoration: new BoxDecoration(
+          color: (user.isOwner.toLowerCase() == 'true')
+              ? Colors.orange[300]
+              : Colors.grey[800],
+          borderRadius: new BorderRadius.all(Radius.circular(10.0))),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                  width: 50.0,
+                  height: 50.0,
+                  decoration: new BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: new DecorationImage(
+                          fit: BoxFit.cover,
+                          image: AssetImage(user.profileImg)))),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  user.name,
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+                Text(
+                  'top ${user.rank}',
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                )
+              ],
+            ),
+            Spacer(),
+            MaterialButton(
+              onPressed: null,
+              child: (user.isReady.toLowerCase() == 'true')
+                  ? new Icon(Icons.check, color: Colors.green, size: 35.0)
+                  : new Icon(Icons.close, color: Colors.redAccent, size: 35.0),
+              shape: new CircleBorder(),
+              elevation: 2.0,
+              padding: const EdgeInsets.all(15.0),
+            ),
+          ],
+        ),
       ),
     );
+
+    if (user.key == currentUser.key) {
+      return Padding(
+        padding: const EdgeInsets.all(8),
+        child: cardComponent,
+      );
+    } else {
+      return Container(
+        margin: const EdgeInsets.all(4),
+        child: Slidable(
+          actionPane: SlidableBehindActionPane(),
+          enabled: true,
+          actions: <Widget>[...actions],
+          key: new ObjectKey(user.key),
+          child: cardComponent,
+        ),
+      );
+    }
   }
 
   showDebugPrint() {
