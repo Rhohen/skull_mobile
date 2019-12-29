@@ -1,4 +1,5 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:faker/faker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -156,8 +157,9 @@ class UserCard extends StatelessWidget {
         child: Slidable(
           actionPane: SlidableBehindActionPane(),
           enabled: true,
+          closeOnScroll: false,
           actions: <Widget>[...actions],
-          key: new ObjectKey(user.key),
+          key: new ObjectKey(0),
           child: cardComponent,
         ),
       );

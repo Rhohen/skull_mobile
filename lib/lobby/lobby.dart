@@ -79,8 +79,8 @@ class _Lobby extends State<Lobby> {
         if (currentUser.key == event.snapshot.key) {
           Map userData = new Map<String, dynamic>.from(event.snapshot.value);
           currentUser.copyFrom(User.from(userData));
+          setState(() {});
         }
-        setState(() {});
         if (currentUser.startGame == 'true') {
           Navigator.popAndPushNamed(context, GamePage.routeName);
         }
