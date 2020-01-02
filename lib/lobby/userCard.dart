@@ -1,10 +1,8 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:faker/faker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'userModel.dart';
-import 'dart:developer' as LOGGER;
 
 class UserCard extends StatelessWidget {
   final User user;

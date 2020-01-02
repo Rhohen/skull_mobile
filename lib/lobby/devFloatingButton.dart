@@ -3,8 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:radial_button/widget/circle_floating_button.dart';
-import 'dart:developer' as LOGGER;
-
+import 'package:skull_mobile/game/EGameState.dart';
 import 'package:skull_mobile/lobby/userModel.dart';
 
 final databaseReference = FirebaseDatabase.instance.reference();
@@ -30,7 +29,8 @@ class DevFloatingButton extends StatelessWidget {
               .then((DataSnapshot snapshot) {
             if (snapshot != null && snapshot.value != null) {
               Map lobbyMap = new Map<String, dynamic>.from(snapshot.value);
-              lobbyMap.removeWhere((k, v) => k == currentUser.key);
+              lobbyMap.removeWhere(
+                  (k, v) => (k == currentUser.key || k == 'state'));
               if (lobbyMap.entries.length > 0) {
                 lobbyMap.entries.forEach((entry) {
                   if (entry.key != null) {
@@ -58,7 +58,8 @@ class DevFloatingButton extends StatelessWidget {
               .then((DataSnapshot snapshot) {
             if (snapshot != null && snapshot.value != null) {
               Map lobbyMap = new Map<String, dynamic>.from(snapshot.value);
-              lobbyMap.removeWhere((k, v) => k == currentUser.key);
+              lobbyMap.removeWhere(
+                  (k, v) => (k == currentUser.key || k == 'state'));
 
               if (lobbyMap.entries.length > 0) {
                 String lastKey = lobbyMap.entries.last.key;
@@ -93,8 +94,7 @@ class DevFloatingButton extends StatelessWidget {
             'profileImg': photo,
             'rank': rank,
             'isReady': isReady,
-            'isOwner': isOwner,
-            'startGame': 'false'
+            'isOwner': isOwner
           });
         },
         child: Icon(Icons.add),
@@ -103,6 +103,8 @@ class DevFloatingButton extends StatelessWidget {
         heroTag: "generate",
         backgroundColor: Colors.blueAccent,
         onPressed: () {
+          bool isCurrentUserOwner = false;
+
           databaseReference
               .child('lobbies')
               .child(lobbyId)
@@ -110,7 +112,15 @@ class DevFloatingButton extends StatelessWidget {
               .then((DataSnapshot snapshot) {
             if (snapshot != null && snapshot.value != null) {
               Map lobbyMap = new Map<String, dynamic>.from(snapshot.value);
-              lobbyMap.removeWhere((k, v) => k == currentUser.key);
+              lobbyMap.removeWhere((k, v) {
+                if (k != currentUser.key) {
+                  return false;
+                } else {
+                  Map userData = new Map<String, dynamic>.from(v);
+                  isCurrentUserOwner = (User.from(userData).isOwner == 'true');
+                  return true;
+                }
+              });
               if (lobbyMap.entries.length > 0) {
                 lobbyMap.entries.forEach((entry) {
                   if (entry.key != null) {
@@ -122,10 +132,17 @@ class DevFloatingButton extends StatelessWidget {
                   }
                 });
               }
+              databaseReference
+                  .child('lobbies')
+                  .child(lobbyId)
+                  .child("state")
+                  .set(EGameState.INITIALIZING);
             }
           }).then((t) {
             int nbUser = faker.randomGenerator.integer(6, min: 1);
-            int ownerNumber = faker.randomGenerator.integer(nbUser, min: 0);
+            int ownerNumber = (isCurrentUserOwner)
+                ? -1
+                : faker.randomGenerator.integer(nbUser, min: 0);
             for (int i = 0; i < nbUser; i++) {
               String photo = 'img/pic-' +
                   faker.randomGenerator.integer(7, min: 1).toString() +
@@ -144,8 +161,7 @@ class DevFloatingButton extends StatelessWidget {
                 'profileImg': photo,
                 'rank': rank,
                 'isReady': isReady,
-                'isOwner': isOwner,
-                'startGame': 'false'
+                'isOwner': isOwner
               });
             }
           });

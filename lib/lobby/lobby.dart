@@ -1,7 +1,10 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:skull_mobile/game/EGameState.dart';
 import 'package:skull_mobile/game/game.dart';
+import 'package:skull_mobile/game/gameArguments.dart';
+import 'package:skull_mobile/game/playerModel.dart';
 import 'package:skull_mobile/jouer.dart';
 import 'package:skull_mobile/lobby/devFloatingButton.dart';
 import 'userModel.dart';
@@ -40,8 +43,16 @@ class _Lobby extends State<Lobby> {
     lobbyRef = database.reference().child('lobbies').child(lobbyId);
 
     lobbyRef.once().then((DataSnapshot snapshot) {
-      if (snapshot != null && snapshot.value == null) {
-        currentUser.isOwner = 'true';
+      if (snapshot != null) {
+        bool emptyRoom = true;
+        if (snapshot.value != null) {
+          Map currentLobby = new Map<String, dynamic>.from(snapshot.value);
+          emptyRoom = currentLobby.length <= 1;
+        }
+        if (emptyRoom) {
+          currentUser.isOwner = 'true';
+          lobbyRef.child("state").set(EGameState.INITIALIZING);
+        }
       }
       var generatedReference = lobbyRef.push();
       currentUser.key = generatedReference.key;
@@ -56,19 +67,7 @@ class _Lobby extends State<Lobby> {
   }
 
   void _launchGame() {
-    lobbyRef.once().then((DataSnapshot snapshot) {
-      if (snapshot != null && snapshot.value != null) {
-        Map lobbyMap = new Map<String, dynamic>.from(snapshot.value);
-        if (lobbyMap.entries.length > 0) {
-          lobbyMap.entries.forEach((entry) {
-            Map userData = new Map<String, dynamic>.from(entry.value);
-            User userToUpdate = User.from(userData);
-            userToUpdate.startGame = 'true';
-            lobbyRef.child(entry.key).set(userToUpdate.toJson());
-          });
-        }
-      }
-    });
+    lobbyRef.child("state").set(EGameState.PLAYING);
   }
 
   _onEntryAddedUser(Event event) {}
@@ -80,9 +79,16 @@ class _Lobby extends State<Lobby> {
           Map userData = new Map<String, dynamic>.from(event.snapshot.value);
           currentUser.copyFrom(User.from(userData));
           setState(() {});
-        }
-        if (currentUser.startGame == 'true') {
-          Navigator.popAndPushNamed(context, GamePage.routeName);
+        } else if (event.snapshot.key == 'state' &&
+            event.snapshot.value == EGameState.PLAYING) {
+          Player currentPlayer = Player.fromUser(currentUser);
+          lobbyRef
+              .child("game")
+              .child(currentUser.key)
+              .set(currentPlayer.toJson());
+          GameArguments gameArgs = new GameArguments(lobbyId, currentPlayer);
+          Navigator.popAndPushNamed(context, GamePage.routeName,
+              arguments: gameArgs);
         }
       }
     }
@@ -113,7 +119,8 @@ class _Lobby extends State<Lobby> {
                   snapshot.value != null &&
                   snapshot.value is Map<dynamic, dynamic>) {
                 Map lobbyMap = new Map<String, dynamic>.from(snapshot.value);
-                lobbyMap.removeWhere((k, v) => k == currentUser.key);
+                lobbyMap.removeWhere((k, v) =>
+                    k == currentUser.key || !(v is Map<dynamic, dynamic>));
                 if (lobbyMap.entries.length > 0) {
                   Map userData = new Map<String, dynamic>.from(
                       lobbyMap.entries.first.value);
@@ -223,9 +230,10 @@ class _Lobby extends State<Lobby> {
                         if (_isUserCorrect(user)) {
                           if (user.key != currentUser.key) users.add(user);
                           if (user.isReady == 'true') numberOfReady++;
-                        } else {
-                          lobbyRef.child(user.key).remove();
                         }
+                        /* else {
+                          lobbyRef.child(user.key).remove();
+                        }*/
                       }
                     });
 

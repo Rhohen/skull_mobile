@@ -5,6 +5,7 @@ import 'package:skull_mobile/jouer.dart';
 import 'package:skull_mobile/lobby/lobby.dart';
 import 'package:skull_mobile/lobby/lobbyArguments.dart';
 import 'accueil.dart';
+import 'game/gameArguments.dart';
 
 void main() => runApp(MyApp());
 
@@ -15,6 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case JouerPage.routeName:
@@ -34,8 +36,10 @@ class MyApp extends StatelessWidget {
             );
             break;
           case GamePage.routeName:
+            GameArguments gameArguments = settings.arguments;
             return PageTransition(
-              child: GamePage(),
+              child:
+                  GamePage(gameArguments.lobbyId, gameArguments.currentPlayer),
               type: PageTransitionType.fade,
               settings: settings,
             );
