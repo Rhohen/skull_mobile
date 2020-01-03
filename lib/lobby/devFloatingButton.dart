@@ -94,7 +94,8 @@ class DevFloatingButton extends StatelessWidget {
             'profileImg': photo,
             'rank': rank,
             'isReady': isReady,
-            'isOwner': isOwner
+            'isOwner': isOwner,
+            'fcmKey': "0"
           });
         },
         child: Icon(Icons.add),
@@ -161,7 +162,8 @@ class DevFloatingButton extends StatelessWidget {
                 'profileImg': photo,
                 'rank': rank,
                 'isReady': isReady,
-                'isOwner': isOwner
+                'isOwner': isOwner,
+                'fcmKey': "0"
               });
             }
           });

@@ -38,8 +38,7 @@ class MyApp extends StatelessWidget {
           case GamePage.routeName:
             GameArguments gameArguments = settings.arguments;
             return PageTransition(
-              child:
-                  GamePage(gameArguments.lobbyId, gameArguments.currentPlayer),
+              child: GamePage(gameArguments.lobbyId, gameArguments.currentUser),
               type: PageTransitionType.fade,
               settings: settings,
             );

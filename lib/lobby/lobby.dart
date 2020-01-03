@@ -4,7 +4,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:skull_mobile/game/EGameState.dart';
 import 'package:skull_mobile/game/game.dart';
 import 'package:skull_mobile/game/gameArguments.dart';
-import 'package:skull_mobile/game/playerModel.dart';
 import 'package:skull_mobile/jouer.dart';
 import 'package:skull_mobile/lobby/devFloatingButton.dart';
 import 'userModel.dart';
@@ -81,12 +80,8 @@ class _Lobby extends State<Lobby> {
           setState(() {});
         } else if (event.snapshot.key == 'state' &&
             event.snapshot.value == EGameState.PLAYING) {
-          Player currentPlayer = Player.fromUser(currentUser);
-          lobbyRef
-              .child("game")
-              .child(currentUser.key)
-              .set(currentPlayer.toJson());
-          GameArguments gameArgs = new GameArguments(lobbyId, currentPlayer);
+          //Player currentPlayer = Player.fromUser(currentUser);
+          GameArguments gameArgs = new GameArguments(lobbyId, currentUser);
           Navigator.popAndPushNamed(context, GamePage.routeName,
               arguments: gameArgs);
         }

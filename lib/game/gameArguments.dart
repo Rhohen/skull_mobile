@@ -1,8 +1,8 @@
-import 'package:skull_mobile/game/playerModel.dart';
+import 'package:skull_mobile/lobby/userModel.dart';
 
 class GameArguments {
   final String lobbyId;
-  final Player currentPlayer;
+  final User currentUser;
 
-  GameArguments(this.lobbyId, this.currentPlayer);
+  GameArguments(this.lobbyId, this.currentUser);
 }
