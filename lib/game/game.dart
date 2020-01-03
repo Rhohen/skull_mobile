@@ -48,7 +48,22 @@ class GamePageState extends State<GamePage> {
     users = new HashMap();
 
     lobbyRef.onChildChanged.listen(_onEntryChangedUser);
-
+    lobbyRef.once().then((DataSnapshot snapshot) {
+      if (snapshot != null &&
+          snapshot.value != null &&
+          snapshot.value is Map<dynamic, dynamic>) {
+        Map lobbyMap = new Map<String, dynamic>.from(snapshot.value);
+        lobbyMap.removeWhere(
+            (k, v) => k == currentUser.key || !(v is Map<dynamic, dynamic>));
+        if (lobbyMap.entries.length > 0) {
+          lobbyMap.forEach((k, v) {
+            Map mapUser = new Map<String, dynamic>.from(v);
+            users[k] = User.from(mapUser);
+            print("user " + k + " updated - " + users.length.toString());
+          });
+        }
+      }
+    });
     client = http.Client();
 
     headersMap = {
@@ -92,7 +107,7 @@ class GamePageState extends State<GamePage> {
         users[event.snapshot.key] = User.from(mapUser);
         print("user " +
             event.snapshot.key +
-            " added - " +
+            " updated - " +
             users.length.toString());
       }
     }
