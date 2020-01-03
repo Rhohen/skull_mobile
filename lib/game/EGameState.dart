@@ -5,6 +5,6 @@ class EGameState {
   /// The players are currently playing the game, the lobby is no longer available
   static const String PLAYING = "PLAYING";
 
-  /// The game is finished
+  /// The game is finished or stopped
   static const String ENDED = "ENDED";
 }

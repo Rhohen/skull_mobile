@@ -53,6 +53,6 @@ class User {
     this.profileImg = user.profileImg;
     this.rank = user.rank;
     this.name = user.name;
-    this.fcmKey = user.fcmKey;
+    if (user.fcmKey != '0') this.fcmKey = user.fcmKey;
   }
 }

@@ -132,7 +132,7 @@ class UserCard extends StatelessWidget {
             Spacer(),
             MaterialButton(
               onPressed: null,
-              child: (user.isReady.toLowerCase() == 'true')
+              child: !(user.isReady.toLowerCase() == 'false')
                   ? new Icon(Icons.check, color: Colors.green, size: 35.0)
                   : new Icon(Icons.close, color: Colors.redAccent, size: 35.0),
               shape: new CircleBorder(),
@@ -162,9 +162,5 @@ class UserCard extends StatelessWidget {
         ),
       );
     }
-  }
-
-  showDebugPrint() {
-    debugPrint('Print from Callback Function');
   }
 }

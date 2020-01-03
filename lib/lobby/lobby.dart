@@ -66,7 +66,19 @@ class _Lobby extends State<Lobby> {
   }
 
   void _launchGame() {
-    lobbyRef.child("state").set(EGameState.PLAYING);
+    lobbyRef.once().then((DataSnapshot snapshot) {
+      Map lobbyMap = new Map<String, dynamic>.from(snapshot.value);
+      lobbyMap.removeWhere((k, v) => !(v is Map<dynamic, dynamic>));
+
+      lobbyMap.forEach((k, v) {
+        Map mapUser = new Map<String, dynamic>.from(v);
+        User user = User.from(mapUser);
+        user.isReady = 'loading';
+        lobbyRef.child(k).set(user.toJson());
+      });
+
+      lobbyRef.child("state").set(EGameState.PLAYING);
+    });
   }
 
   _onEntryAddedUser(Event event) {}
@@ -185,10 +197,10 @@ class _Lobby extends State<Lobby> {
                           (currentUser.isReady == 'false').toString();
                       lobbyRef.child(currentUser.key).set(currentUser.toJson());
                     },
-                    color: (currentUser.isReady.toLowerCase() == 'true')
+                    color: !(currentUser.isReady.toLowerCase() == 'false')
                         ? Colors.green
                         : Colors.redAccent,
-                    child: (currentUser.isReady.toLowerCase() == 'true')
+                    child: !(currentUser.isReady.toLowerCase() == 'false')
                         ? new Icon(Icons.check, color: Colors.white, size: 35.0)
                         : new Icon(Icons.close,
                             color: Colors.white, size: 35.0),
@@ -224,7 +236,7 @@ class _Lobby extends State<Lobby> {
                         User user = User.from(userData);
                         if (_isUserCorrect(user)) {
                           if (user.key != currentUser.key) users.add(user);
-                          if (user.isReady == 'true') numberOfReady++;
+                          if (!(user.isReady == 'false')) numberOfReady++;
                         }
                         /* else {
                           lobbyRef.child(user.key).remove();
