@@ -1,5 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:skull_mobile/widgetTester.dart';
 import 'jouer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -25,7 +26,8 @@ class AccueilPage extends StatelessWidget {
           ),
           RaisedButton(
             onPressed: () {
-              _launchURL();
+              Navigator.pushNamed(context, WidgetTester.routeName);
+              //_launchURL();
             },
             child: Text('Règles', style: TextStyle(fontSize: 20)),
           ),
