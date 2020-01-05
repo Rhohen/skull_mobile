@@ -36,8 +36,9 @@ class AccueilPage extends StatelessWidget {
     );
   }
 
+  // ignore: unused_element
   _launchURL() async {
-    const url = 'http://www.skull-and-roses.com/pdf/Skull_rules_Us.pdf';
+    const url = 'http://www.skull-and-roses.com/pdf/Skull_rules_Fr.pdf';
     if (await canLaunch(url)) {
       await launch(url);
     } else {

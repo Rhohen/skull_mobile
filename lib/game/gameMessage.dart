@@ -1,6 +1,3 @@
-import 'package:faker/faker.dart';
-import 'package:firebase_database/firebase_database.dart';
-
 class GameMessage {
   String from;
   String message;

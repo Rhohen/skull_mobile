@@ -1,6 +1,9 @@
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -8,10 +11,12 @@ import 'package:flutter/services.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart';
 import 'package:skull_mobile/game/gameMessage.dart';
+import 'package:skull_mobile/game/playerModel.dart';
+import 'package:skull_mobile/game/playerWidget.dart';
 import 'package:skull_mobile/lobby/userModel.dart';
 import 'package:synchronized/synchronized.dart';
+import 'package:vector_math/vector_math.dart' hide Colors;
 import 'dart:developer' as LOGGER;
-
 import '../jouer.dart';
 import 'EGameState.dart';
 
@@ -34,16 +39,14 @@ class GamePageState extends State<GamePage> {
   User currentUser;
   BuildContext lobbiesContext;
   FirebaseMessaging _fcm = new FirebaseMessaging();
-  Map<String, User> users;
+  Map<String, Player> players;
   GamePageState(this.lobbyId, this.currentUser);
 
   // Variables for testing purpose
-  bool _myTurn = false;
-  String _messageReceived = '';
-  final myController = TextEditingController();
   int indexTurn = 0;
   static int playersNotReady;
   var lock = Lock();
+  bool gameCanStart;
 
   // Http connection
   BaseClient client;
@@ -56,13 +59,13 @@ class GamePageState extends State<GamePage> {
   @override
   void initState() {
     super.initState();
-
+    gameCanStart = false;
+    currentIndex = 0;
     final FirebaseDatabase database = FirebaseDatabase.instance;
 
     lobbyRef = database.reference().child('lobbies').child(lobbyId);
 
-    users = new LinkedHashMap();
-
+    players = new LinkedHashMap();
     lobbyRef.onChildChanged.listen(_onEntryChangedUser);
 
     client = http.Client();
@@ -78,14 +81,16 @@ class GamePageState extends State<GamePage> {
         Map body = json.decode(message['notification']['body'].toString());
 
         switch (action) {
-          case 'USER_HAS_PLAYED':
+          case 'PLAYER_HAS_PLAYED':
             Map body = json.decode(message['notification']['body'].toString());
 
             GameMessage gameMessage = GameMessage.from(body);
+            players[gameMessage.from].isTurn = false;
+
             if (body != null && currentUser.key != gameMessage.from) {
-              _messageReceived = "Message reçu : ${gameMessage.message}";
+              LOGGER.log("Message reçu : ${gameMessage.message}");
             } else {
-              _messageReceived = 'Message envoyé';
+              LOGGER.log('Message envoyé');
             }
             if (currentUser.isOwner == 'true') {
               _sendNextTurn();
@@ -93,10 +98,13 @@ class GamePageState extends State<GamePage> {
             setState(() {});
             break;
           case 'NEXT_TURN':
-            if (body != null && body['userKey'] == currentUser.key) {
-              _myTurn = true;
-              setState(() {});
+            if (body != null) {
+              LOGGER.log("Next turn received : " + body['userKey']);
+              gameCanStart = true;
+              players[body['userKey']].isTurn = true;
             }
+            setState(() {});
+
             break;
           default:
             LOGGER.log('onMessage undefined: $message ');
@@ -131,10 +139,10 @@ class GamePageState extends State<GamePage> {
                 User updatedUser = User.from(mapUser);
                 updatedUser.key = k;
 
-                if (users.containsKey(k))
-                  users[k].copyFrom(updatedUser);
+                if (players.containsKey(k))
+                  players[k].copyFromUser(updatedUser);
                 else
-                  users[k] = updatedUser;
+                  players[k] = Player.fromUser(updatedUser);
               });
 
               currentUser.isReady = 'true';
@@ -156,12 +164,13 @@ class GamePageState extends State<GamePage> {
           User updatedUser = User.from(mapUser);
           updatedUser.key = event.snapshot.key;
 
-          if (users.containsKey(event.snapshot.key))
-            users[event.snapshot.key].copyFrom(updatedUser);
+          if (players.containsKey(event.snapshot.key))
+            players[event.snapshot.key].copyFromUser(updatedUser);
           else
-            users[event.snapshot.key] = updatedUser;
+            players[event.snapshot.key] = Player.fromUser(updatedUser);
 
           if (currentUser.isOwner == 'true' && allUsersReady()) {
+            gameCanStart = true;
             LOGGER.log("The game can start, sending orders to next player...");
             _sendNextTurn();
           }
@@ -176,52 +185,34 @@ class GamePageState extends State<GamePage> {
     }
   }
 
-  void _sendPostNotification() {
-    users.forEach((k, v) {
-      GameMessage gameMessage =
-          new GameMessage(currentUser.key, myController.text);
+  Player getNextPlayer() {
+    indexTurn = (indexTurn + 1) % players.length;
+    Player nextPlayer = players.values.elementAt(indexTurn);
+    LOGGER.log("Next player = ${nextPlayer.key}");
+
+    return players.values.elementAt(indexTurn);
+  }
+
+  void _sendNextTurn() {
+    Player player = getNextPlayer();
+    players.forEach((k, v) {
       Map<String, Object> jsonMap = {
         "to": v.fcmKey,
         "notification": {
-          "title": "USER_HAS_PLAYED",
-          "body": gameMessage.toJson(),
+          "title": "NEXT_TURN",
+          "body": {"userKey": player.key},
           "click_action": "FLUTTER_NOTIFICATION_CLICK"
         },
         "priority": 10
       };
       client.post(googleFcmUrl, body: jsonEncode(jsonMap), headers: headersMap);
     });
-    _myTurn = false;
-    myController.text = "";
-    setState(() {});
-  }
-
-  User getNextPlayer() {
-    indexTurn = (indexTurn + 1) % users.length;
-    User nextPlayer = users.values.elementAt(indexTurn);
-    LOGGER.log("Next player = ${nextPlayer.key}");
-
-    return users.values.elementAt(indexTurn);
-  }
-
-  void _sendNextTurn() {
-    User user = getNextPlayer();
-    Map<String, Object> jsonMap = {
-      "to": user.fcmKey,
-      "notification": {
-        "title": "NEXT_TURN",
-        "body": {"userKey": user.key},
-        "click_action": "FLUTTER_NOTIFICATION_CLICK"
-      },
-      "priority": 10
-    };
-    client.post(googleFcmUrl, body: jsonEncode(jsonMap), headers: headersMap);
     setState(() {});
   }
 
   bool allUsersReady() {
-    for (User user in users.values) {
-      if (user.isReady != 'true') return false;
+    for (Player player in players.values) {
+      if (player.isReady != 'true') return false;
     }
     return true;
   }
@@ -237,62 +228,227 @@ class GamePageState extends State<GamePage> {
     return Future.value(false);
   }
 
+  final Map<String, String> cardsAssets = {
+    "rose": "assets/rose.png",
+    "skull": "assets/skull.png"
+  };
+
+  var refreshFunction;
+  List<String> cards;
+  int currentIndex;
+
+  Vector2 getPosition(Vector2 center, double radius, double angle) {
+    double playerX = (center.x + radius * cos(radians(angle)));
+    double playerY = (center.y + radius * sin(radians(angle)));
+    return new Vector2(playerX, playerY);
+  }
+
+  void _sendPostNotification() {
+    players.forEach((k, v) {
+      GameMessage gameMessage =
+          new GameMessage(currentUser.key, cards[currentIndex]);
+      Map<String, Object> jsonMap = {
+        "to": v.fcmKey,
+        "notification": {
+          "title": "PLAYER_HAS_PLAYED",
+          "body": gameMessage.toJson(),
+          "click_action": "FLUTTER_NOTIFICATION_CLICK"
+        },
+        "priority": 10
+      };
+      client.post(googleFcmUrl, body: jsonEncode(jsonMap), headers: headersMap);
+    });
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIOverlays([]);
-    return WillPopScope(
-      onWillPop: _onBackPressed,
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Skull Game',
-        home: SizedBox.expand(
-          child: Container(
-            decoration: new BoxDecoration(color: Colors.white),
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+    Widget mainGameWidget;
+    if (gameCanStart) {
+      cards = players[currentUser.key].cards;
+      bool isPortrait =
+          MediaQuery.of(context).orientation == Orientation.portrait;
+      double tableDiameter;
+      double sizeMultiplier;
+      Vector2 tablePosition = new Vector2(0.0, 0.0);
+      double imgSize = 36.0;
+      double buttonSize = 36.0;
+
+      if (isPortrait) {
+        sizeMultiplier = 0.42;
+        tableDiameter = (MediaQuery.of(context).size.width * sizeMultiplier)
+            .roundToDouble();
+      } else {
+        sizeMultiplier = 0.32;
+        tableDiameter = (MediaQuery.of(context).size.height * sizeMultiplier)
+            .roundToDouble();
+      }
+
+      double cardDiameter = MediaQuery.of(context).size.height * 0.21;
+      double containerCardsHeight = cardDiameter + 20;
+      double dividerHeight = 16;
+      double gameScreenHeight = MediaQuery.of(context).size.height -
+          dividerHeight -
+          containerCardsHeight -
+          buttonSize;
+
+      // Je comprend pas pourquoi ça doit être inversé
+      tablePosition.x = gameScreenHeight / 2;
+      tablePosition.y = MediaQuery.of(context).size.width / 2;
+
+      double tableLeftPadding = tablePosition.y - tableDiameter / 2;
+      double tableTopPadding = tablePosition.x - tableDiameter / 2;
+
+      List<Widget> playersIcon = new List();
+
+      int numberOfPlayers = players.length;
+
+      double spacePlayer = 360 / numberOfPlayers;
+      double textSize = 14, textScaleFactor = 1;
+      double heightTextSize = textSize * textScaleFactor;
+      double widthContainerSize = 80;
+      for (int i = 0; i < numberOfPlayers; i++) {
+        Player player = players.values.elementAt(i);
+        Vector2 v = getPosition(
+            tablePosition, (tableDiameter / 2) + 20, spacePlayer * i);
+
+        double centeredHorizontalValue =
+            max(imgSize / 2, widthContainerSize / 2);
+        double centeredVerticalValue = imgSize / 2 +
+            heightTextSize / 2 +
+            ((player.isTurn) ? imgSize / 2 : 0);
+
+        playersIcon.add(
+          PlayerWidget(
+            top: (v.x - centeredVerticalValue),
+            left: (v.y - centeredHorizontalValue),
+            maxWidthContainer: widthContainerSize,
+            isPlayerTurn: player.isTurn,
+            iconSize: imgSize,
+            hasScored: player.hasScored,
+            profileImg: player.profileImg,
+            playerName: player.name,
+            textSize: textSize,
+            textScaleFactor: textScaleFactor,
+          ),
+        );
+      }
+      mainGameWidget = Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          Expanded(
+            child: new Center(
+              child: new Stack(
                 children: <Widget>[
-                  Text(
-                    _messageReceived,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w900,
-                        fontFamily: 'Open Sans',
-                        fontSize: 15),
-                  ),
-                  Material(
-                    child: TextField(
-                      maxLines: 1,
-                      maxLength: 40,
-                      controller: myController,
-                      enabled: _myTurn,
-                      decoration: InputDecoration(
-                        contentPadding:
-                            EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                        labelText:
-                            _myTurn ? 'Enter a word to send' : 'NOT YOUR TURN',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(32.0),
+                  Positioned(
+                    child: Opacity(
+                      opacity: 0.5,
+                      child: Container(
+                        decoration: new BoxDecoration(
+                          color: Colors.blue,
+                          shape: BoxShape.circle,
                         ),
                       ),
                     ),
+                    top: tableTopPadding,
+                    left: tableLeftPadding,
+                    height: tableDiameter,
+                    width: tableDiameter,
                   ),
-                  OutlineButton(
-                    color: Colors.white,
-                    borderSide: BorderSide(
-                      style: BorderStyle.solid,
-                      width: 1.2,
-                    ),
-                    onPressed: _myTurn ? _sendPostNotification : null,
-                    child: Text('Send word to other player'),
-                  ),
+                  ...playersIcon
                 ],
               ),
             ),
           ),
-        ),
+          Container(
+            child: Column(
+              children: <Widget>[
+                Divider(
+                  height: dividerHeight,
+                  indent: 15,
+                  endIndent: 15,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    ButtonTheme(
+                      height: buttonSize,
+                      buttonColor: Colors.green,
+                      textTheme: ButtonTextTheme.primary,
+                      child: RaisedButton(
+                        onPressed: (players[currentUser.key].isTurn)
+                            ? _sendPostNotification
+                            : null,
+                        child: Text("Poser une carte"),
+                      ),
+                    ),
+                    SizedBox(width: 20),
+                    ButtonTheme(
+                      height: buttonSize,
+                      buttonColor: Colors.blueAccent,
+                      textTheme: ButtonTextTheme.primary,
+                      child: RaisedButton(
+                        onPressed: null,
+                        child: Text("Lancer un défi"),
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  height: containerCardsHeight,
+                  width: MediaQuery.of(context).size.width,
+                  child: Swiper(
+                    onIndexChanged: (int index) {
+                      currentIndex = index;
+                    },
+                    itemCount: cards.length,
+                    itemWidth: cardDiameter,
+                    itemHeight: cardDiameter,
+                    layout: SwiperLayout.STACK,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Container(
+                        decoration: new BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: new DecorationImage(
+                            fit: BoxFit.cover,
+                            image: AssetImage(cardsAssets[cards[index]]),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black54,
+                              blurRadius: 3.0,
+                              spreadRadius: 0.8,
+                            )
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+    return WillPopScope(
+      onWillPop: _onBackPressed,
+      child: Scaffold(
+        body: ((gameCanStart)
+            ? mainGameWidget
+            : Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    SpinKitPouringHourglass(color: Colors.grey[800]),
+                    Text("The game is loading.."),
+                  ],
+                ),
+              )),
       ),
     );
   }

@@ -79,7 +79,7 @@ class DevFloatingButton extends StatelessWidget {
         heroTag: "add",
         backgroundColor: Colors.lightGreen,
         onPressed: () {
-          String photo = 'img/pic-' +
+          String photo = 'assets/pic-' +
               faker.randomGenerator.integer(7, min: 1).toString() +
               '.png';
           String name = faker.person.firstName();
@@ -145,7 +145,7 @@ class DevFloatingButton extends StatelessWidget {
                 ? -1
                 : faker.randomGenerator.integer(nbUser, min: 0);
             for (int i = 0; i < nbUser; i++) {
-              String photo = 'img/pic-' +
+              String photo = 'assets/pic-' +
                   faker.randomGenerator.integer(7, min: 1).toString() +
                   '.png';
               String name = faker.person.firstName();

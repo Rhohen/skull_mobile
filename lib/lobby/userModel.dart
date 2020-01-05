@@ -41,7 +41,7 @@ class User {
   }
 
   factory User.generate(String name) {
-    String photo = 'img/pic-' +
+    String photo = 'assets/pic-' +
         faker.randomGenerator.integer(7, min: 1).toString() +
         '.png';
     return new User("-1", name, photo, "-1", "false", "false", "0");
