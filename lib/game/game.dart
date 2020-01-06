@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:faker/faker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:http/http.dart' as http;
@@ -49,6 +50,7 @@ class GamePageState extends State<GamePage> {
   static int playersNotReady;
   var lock = Lock();
   bool gameCanStart;
+  bool challengeOccurred;
 
   // Http connection
   BaseClient client;
@@ -63,7 +65,12 @@ class GamePageState extends State<GamePage> {
     super.initState();
     isNotificationAllowed = false;
     gameCanStart = false;
+    challengeOccurred = true;
     currentIndex = 0;
+
+    cardsOnTable = new HashMap();
+    myCardsOnTable = new List();
+
     final FirebaseDatabase database = FirebaseDatabase.instance;
 
     lobbyRef = database.reference().child('lobbies').child(lobbyId);
@@ -89,7 +96,7 @@ class GamePageState extends State<GamePage> {
 
             GameMessage gameMessage = GameMessage.from(body);
             players[gameMessage.from].isTurn = false;
-
+            cardsOnTable[gameMessage.from]--;
             if (body != null && currentUser.key != gameMessage.from) {
               LOGGER.log("Message reçu : ${gameMessage.message}");
             } else {
@@ -108,7 +115,26 @@ class GamePageState extends State<GamePage> {
               isNotificationAllowed = (body['userKey'] == currentUser.key);
             }
             setState(() {});
+            break;
+          case 'CHALLENGE_TIME':
+            challengeOccurred = true;
 
+            Map body = json.decode(message['notification']['body'].toString());
+
+            GameMessage gameMessage = GameMessage.from(body);
+            List<String> carsList = players[gameMessage.from].cards;
+            int cardIndex =
+                new Faker().randomGenerator.integer(carsList.length);
+            LOGGER.log("Taille avant : " +
+                players[gameMessage.from].cards.length.toString());
+            LOGGER.log(gameMessage.from +
+                " carte a supprimer : n° " +
+                cardIndex.toString());
+            players[gameMessage.from].cards.removeAt(cardIndex);
+            LOGGER.log("Taille après : " +
+                players[gameMessage.from].cards.length.toString());
+
+            setState(() {});
             break;
           default:
             LOGGER.log('onMessage undefined: $message ');
@@ -193,8 +219,19 @@ class GamePageState extends State<GamePage> {
     indexTurn = (indexTurn + 1) % players.length;
     Player nextPlayer = players.values.elementAt(indexTurn);
     LOGGER.log("Next player = ${nextPlayer.key}");
+    return nextPlayer;
+  }
 
-    return players.values.elementAt(indexTurn);
+  Player getPreviousPlayer() {
+    int playersSize = players.length;
+    int previousPlayerIndex = players.keys.toList().indexOf(currentUser.key);
+    previousPlayerIndex =
+        ((((previousPlayerIndex - 1) % playersSize) + playersSize) %
+            playersSize);
+    Player previousPlayer = players.values.elementAt(previousPlayerIndex);
+    LOGGER.log("Previous player = ${previousPlayer.key}");
+
+    return previousPlayer;
   }
 
   void _sendNextTurn() {
@@ -238,7 +275,9 @@ class GamePageState extends State<GamePage> {
   };
 
   var refreshFunction;
-  List<String> cards;
+  Map<String, int> cardsOnTable;
+  List<String> myCardsOnTable;
+
   int currentIndex;
 
   Vector2 getPosition(Vector2 center, double radius, double angle) {
@@ -247,12 +286,23 @@ class GamePageState extends State<GamePage> {
     return new Vector2(playerX, playerY);
   }
 
+  bool allPlayedOnce(
+      Map<String, int> cardsOnTable, Map<String, Player> players) {
+    String currentUserKey = currentUser.key;
+    Player currentPlayer = players[currentUserKey];
+    return (cardsOnTable[currentUser.key] < currentPlayer.cards.length - 1) ||
+        (currentPlayer.isTurn &&
+            cardsOnTable[currentUser.key] < currentPlayer.cards.length);
+  }
+
   Future<void> _sendPostNotification() async {
     await lock.synchronized(() async {
       if (isNotificationAllowed) {
         isNotificationAllowed = false;
-        GameMessage gameMessage =
-            new GameMessage(currentUser.key, cards[currentIndex]);
+
+        GameMessage gameMessage = new GameMessage(
+            currentUser.key, myCardsOnTable.elementAt(currentIndex));
+        myCardsOnTable.removeAt(currentIndex);
 
         players.forEach((k, v) {
           Map<String, Object> jsonMap = {
@@ -272,12 +322,48 @@ class GamePageState extends State<GamePage> {
     });
   }
 
+  Future<void> _sendChallengeNotification() async {
+    await lock.synchronized(() async {
+      if (!challengeOccurred) {
+        challengeOccurred = true;
+
+        GameMessage gameMessage = new GameMessage(
+            players.values
+                .elementAt(new Faker().randomGenerator.integer(players.length))
+                .key,
+            "Looser");
+
+        players.forEach((k, v) {
+          Map<String, Object> jsonMap = {
+            "to": v.fcmKey,
+            "notification": {
+              "title": "CHALLENGE_TIME",
+              "body": gameMessage.toJson(),
+              "click_action": "FLUTTER_NOTIFICATION_CLICK"
+            },
+            "priority": 10
+          };
+          client.post(googleFcmUrl,
+              body: jsonEncode(jsonMap), headers: headersMap);
+        });
+
+        setState(() {});
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIOverlays([]);
     Widget mainGameWidget;
     if (gameCanStart) {
-      cards = players[currentUser.key].cards;
+      if (challengeOccurred) {
+        players.forEach((k, v) {
+          cardsOnTable[k] = v.cards.length;
+          if (k == currentUser.key) myCardsOnTable = List.of(v.cards);
+        });
+        challengeOccurred = false;
+      }
       bool isPortrait =
           MediaQuery.of(context).orientation == Orientation.portrait;
       double tableDiameter;
@@ -342,6 +428,7 @@ class GamePageState extends State<GamePage> {
             playerName: player.name,
             textSize: textSize,
             textScaleFactor: textScaleFactor,
+            cardsSize: cardsOnTable[player.key],
           ),
         );
       }
@@ -391,9 +478,10 @@ class GamePageState extends State<GamePage> {
                       buttonColor: Colors.green,
                       textTheme: ButtonTextTheme.primary,
                       child: RaisedButton(
-                        onPressed: (isNotificationAllowed)
-                            ? _sendPostNotification
-                            : null,
+                        onPressed:
+                            (isNotificationAllowed && myCardsOnTable.length > 0)
+                                ? _sendPostNotification
+                                : null,
                         child: Text("Poser une carte"),
                       ),
                     ),
@@ -403,7 +491,10 @@ class GamePageState extends State<GamePage> {
                       buttonColor: Colors.blueAccent,
                       textTheme: ButtonTextTheme.primary,
                       child: RaisedButton(
-                        onPressed: null,
+                        onPressed: (allPlayedOnce(cardsOnTable, players) &&
+                                !challengeOccurred)
+                            ? _sendChallengeNotification
+                            : null,
                         child: Text("Lancer un défi"),
                       ),
                     ),
@@ -412,33 +503,39 @@ class GamePageState extends State<GamePage> {
                 Container(
                   height: containerCardsHeight,
                   width: MediaQuery.of(context).size.width,
-                  child: Swiper(
-                    onIndexChanged: (int index) {
-                      currentIndex = index;
-                    },
-                    itemCount: cards.length,
-                    itemWidth: cardDiameter,
-                    itemHeight: cardDiameter,
-                    layout: SwiperLayout.STACK,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Container(
-                        decoration: new BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: new DecorationImage(
-                            fit: BoxFit.cover,
-                            image: AssetImage(cardsAssets[cards[index]]),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black54,
-                              blurRadius: 3.0,
-                              spreadRadius: 0.8,
-                            )
-                          ],
+                  child: (myCardsOnTable.length > 0)
+                      ? Swiper(
+                          onIndexChanged: (int index) {
+                            currentIndex = index;
+                          },
+                          itemCount: myCardsOnTable.length,
+                          itemWidth: cardDiameter,
+                          itemHeight: cardDiameter,
+                          layout: SwiperLayout.STACK,
+                          itemBuilder: (BuildContext context, int index) {
+                            return Container(
+                              decoration: new BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: new DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: AssetImage(cardsAssets[
+                                      myCardsOnTable.elementAt(index)]),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black54,
+                                    blurRadius: 3.0,
+                                    spreadRadius: 0.8,
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          width: 0,
+                          height: 0,
                         ),
-                      );
-                    },
-                  ),
                 ),
               ],
             ),

@@ -12,6 +12,7 @@ class PlayerWidget extends StatelessWidget {
   final String playerName;
   final double textSize;
   final double textScaleFactor;
+  final int cardsSize;
 
   PlayerWidget(
       {Key key,
@@ -24,7 +25,8 @@ class PlayerWidget extends StatelessWidget {
       this.profileImg,
       this.playerName,
       this.textSize,
-      this.textScaleFactor})
+      this.textScaleFactor,
+      this.cardsSize})
       : super(key: key);
 
   @override
@@ -52,7 +54,7 @@ class PlayerWidget extends StatelessWidget {
               offsetY: -8,
               borderRadius: 5,
               backgroundColor: Colors.blue,
-              text: '4',
+              text: cardsSize.toString(),
               child: Container(
                 height: iconSize,
                 width: iconSize,
