@@ -40,6 +40,8 @@ class GamePageState extends State<GamePage> {
   BuildContext lobbiesContext;
   FirebaseMessaging _fcm = new FirebaseMessaging();
   Map<String, Player> players;
+
+  bool isNotificationAllowed;
   GamePageState(this.lobbyId, this.currentUser);
 
   // Variables for testing purpose
@@ -59,6 +61,7 @@ class GamePageState extends State<GamePage> {
   @override
   void initState() {
     super.initState();
+    isNotificationAllowed = false;
     gameCanStart = false;
     currentIndex = 0;
     final FirebaseDatabase database = FirebaseDatabase.instance;
@@ -102,6 +105,7 @@ class GamePageState extends State<GamePage> {
               LOGGER.log("Next turn received : " + body['userKey']);
               gameCanStart = true;
               players[body['userKey']].isTurn = true;
+              isNotificationAllowed = (body['userKey'] == currentUser.key);
             }
             setState(() {});
 
@@ -243,22 +247,29 @@ class GamePageState extends State<GamePage> {
     return new Vector2(playerX, playerY);
   }
 
-  void _sendPostNotification() {
-    players.forEach((k, v) {
-      GameMessage gameMessage =
-          new GameMessage(currentUser.key, cards[currentIndex]);
-      Map<String, Object> jsonMap = {
-        "to": v.fcmKey,
-        "notification": {
-          "title": "PLAYER_HAS_PLAYED",
-          "body": gameMessage.toJson(),
-          "click_action": "FLUTTER_NOTIFICATION_CLICK"
-        },
-        "priority": 10
-      };
-      client.post(googleFcmUrl, body: jsonEncode(jsonMap), headers: headersMap);
+  Future<void> _sendPostNotification() async {
+    await lock.synchronized(() async {
+      if (isNotificationAllowed) {
+        isNotificationAllowed = false;
+        GameMessage gameMessage =
+            new GameMessage(currentUser.key, cards[currentIndex]);
+
+        players.forEach((k, v) {
+          Map<String, Object> jsonMap = {
+            "to": v.fcmKey,
+            "notification": {
+              "title": "PLAYER_HAS_PLAYED",
+              "body": gameMessage.toJson(),
+              "click_action": "FLUTTER_NOTIFICATION_CLICK"
+            },
+            "priority": 10
+          };
+          client.post(googleFcmUrl,
+              body: jsonEncode(jsonMap), headers: headersMap);
+        });
+        setState(() {});
+      }
     });
-    setState(() {});
   }
 
   @override
@@ -380,7 +391,7 @@ class GamePageState extends State<GamePage> {
                       buttonColor: Colors.green,
                       textTheme: ButtonTextTheme.primary,
                       child: RaisedButton(
-                        onPressed: (players[currentUser.key].isTurn)
+                        onPressed: (isNotificationAllowed)
                             ? _sendPostNotification
                             : null,
                         child: Text("Poser une carte"),
