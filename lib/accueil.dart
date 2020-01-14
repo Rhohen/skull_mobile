@@ -26,8 +26,8 @@ class AccueilPage extends StatelessWidget {
           ),
           RaisedButton(
             onPressed: () {
-              Navigator.pushNamed(context, WidgetTester.routeName);
-              //_launchURL();
+              //Navigator.pushNamed(context, WidgetTester.routeName);
+              _launchURL();
             },
             child: Text('Règles', style: TextStyle(fontSize: 20)),
           ),

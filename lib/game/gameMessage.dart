@@ -1,14 +1,20 @@
 class GameMessage {
-  String from;
   String message;
+  String currentPlayer;
+  String nextPlayer;
 
-  GameMessage(this.from, this.message);
+  GameMessage(this.message, this.currentPlayer, this.nextPlayer);
 
   factory GameMessage.from(Map json) {
-    return new GameMessage(json['from'], json['message']);
+    return new GameMessage(
+        json['message'], json['currentPlayer'], json['nextPlayer']);
   }
 
   toJson() {
-    return {"message": message, "from": from};
+    return {
+      "message": message,
+      "currentPlayer": currentPlayer,
+      "nextPlayer": nextPlayer
+    };
   }
 }

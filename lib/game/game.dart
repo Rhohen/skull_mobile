@@ -35,30 +35,53 @@ class GamePage extends StatefulWidget {
 }
 
 class GamePageState extends State<GamePage> {
+  /// Lobby database reference
   DatabaseReference lobbyRef;
+
+  /// Lobby Id
   String lobbyId;
+
+  /// Current cellphone user
   User currentUser;
-  BuildContext lobbiesContext;
-  FirebaseMessaging _fcm = new FirebaseMessaging();
+
+  /// Firebase notifications system
+  final FirebaseMessaging _fcm = new FirebaseMessaging();
+
+  /// Current players list <playerKey, player>
   Map<String, Player> players;
 
+  /// True when its your turn, false otherwise, it allows the user to play a card
   bool isNotificationAllowed;
-  GamePageState(this.lobbyId, this.currentUser);
 
-  // Variables for testing purpose
-  int indexTurn = 0;
-  static int playersNotReady;
+  /// Actual turn index, only useful for the game owner to make the "nextTurn" system work
+  int indexTurn;
+
+  /// Object providing an implicit lock
   var lock = Lock();
+
+  /// Boolean to know if the game can start
   bool gameCanStart;
+
+  /// Boolean to know if a challenge occured
   bool challengeOccurred;
 
-  // Http connection
+  /// Http connection towards google fcmUrl
   BaseClient client;
+
+  /// Google fcm url
   final String googleFcmUrl = "https://fcm.googleapis.com/fcm/send";
+
+  /// Current project api server token (Firebase -> Paramètres du projet -> Cloud Messaging -> Clé de serveur)
   final String apiServerToken =
       "AAAAzzE1LVc:APA91bHBNf5-GKxFHb4A5XSV02rckWY_KVaNoP-qqrK8OcNX8A2A7gF_u4tqezPOWxj3xdQg1Y3E6XGs9fLqrrBpPLAf7ycpQM2MvU-jZ7MH0pmI6pLH9x31UrvymlYNcUcKugGipZxJ";
+
+  /// Headers list that needs to be given for each google fcm request
   Map<String, String> headersMap;
+
+  /// Boolean to know if the game need to be closed or not
   bool closeGame = false;
+
+  GamePageState(this.lobbyId, this.currentUser);
 
   @override
   void initState() {
@@ -67,7 +90,7 @@ class GamePageState extends State<GamePage> {
     gameCanStart = false;
     challengeOccurred = true;
     currentIndex = 0;
-
+    indexTurn = 0;
     cardsOnTable = new HashMap();
     myCardsOnTable = new List();
 
@@ -86,60 +109,65 @@ class GamePageState extends State<GamePage> {
     };
 
     _fcm.configure(
-      onMessage: (Map<String, dynamic> message) {
+      onMessage: (Map<String, dynamic> message) async {
         var action = message['notification']['title'];
         Map body = json.decode(message['notification']['body'].toString());
+        await lock.synchronized(() async {
+          switch (action) {
+            case 'PLAYER_HAS_PLAYED':
+              GameMessage gameMessage = GameMessage.from(body);
+              cardsOnTable[gameMessage.currentPlayer]--;
+              players[gameMessage.currentPlayer].isTurn = false;
 
-        switch (action) {
-          case 'PLAYER_HAS_PLAYED':
-            Map body = json.decode(message['notification']['body'].toString());
+              if (body != null &&
+                  currentUser.key != gameMessage.currentPlayer) {
+                LOGGER.log(
+                    "Player ${gameMessage.currentPlayer} played a ${gameMessage.message}");
+              } else {
+                LOGGER.log('Message sent successfully');
+              }
+              if (currentUser.isOwner == 'true') {
+                _sendNextTurn();
+              }
+              setState(() {});
+              break;
+            case 'NEXT_TURN':
+              GameMessage gameMessage = GameMessage.from(body);
+              if (body != null) {
+                LOGGER.log("Previous player was " + gameMessage.currentPlayer);
+                LOGGER.log("Next player is " + gameMessage.nextPlayer);
+                gameCanStart = true;
+                players[gameMessage.currentPlayer].isTurn = false;
+                players[gameMessage.nextPlayer].isTurn = true;
+                isNotificationAllowed =
+                    (gameMessage.nextPlayer == currentUser.key);
+              }
+              setState(() {});
+              break;
+            case 'CHALLENGE_TIME':
+              challengeOccurred = true;
+              GameMessage gameMessage = GameMessage.from(body);
+              List<String> cardsList = players[gameMessage.message].cards;
 
-            GameMessage gameMessage = GameMessage.from(body);
-            players[gameMessage.from].isTurn = false;
-            cardsOnTable[gameMessage.from]--;
-            if (body != null && currentUser.key != gameMessage.from) {
-              LOGGER.log("Message reçu : ${gameMessage.message}");
-            } else {
-              LOGGER.log('Message envoyé');
-            }
-            if (currentUser.isOwner == 'true') {
-              _sendNextTurn();
-            }
-            setState(() {});
-            break;
-          case 'NEXT_TURN':
-            if (body != null) {
-              LOGGER.log("Next turn received : " + body['userKey']);
-              gameCanStart = true;
-              players[body['userKey']].isTurn = true;
-              isNotificationAllowed = (body['userKey'] == currentUser.key);
-            }
-            setState(() {});
-            break;
-          case 'CHALLENGE_TIME':
-            challengeOccurred = true;
+              // ==== Cette partie là est temporaire, il faudra coder l'interface de challenge === //
+              int cardIndex =
+                  new Faker().randomGenerator.integer(cardsList.length);
+              LOGGER.log(gameMessage.message +
+                  " carte a supprimer : n° " +
+                  cardIndex.toString());
+              players[gameMessage.message].cards.removeAt(cardIndex);
+              // ================================================================================= //
 
-            Map body = json.decode(message['notification']['body'].toString());
-
-            GameMessage gameMessage = GameMessage.from(body);
-            List<String> carsList = players[gameMessage.from].cards;
-            int cardIndex =
-                new Faker().randomGenerator.integer(carsList.length);
-            LOGGER.log("Taille avant : " +
-                players[gameMessage.from].cards.length.toString());
-            LOGGER.log(gameMessage.from +
-                " carte a supprimer : n° " +
-                cardIndex.toString());
-            players[gameMessage.from].cards.removeAt(cardIndex);
-            LOGGER.log("Taille après : " +
-                players[gameMessage.from].cards.length.toString());
-
-            setState(() {});
-            break;
-          default:
-            LOGGER.log('onMessage undefined: $message ');
-            break;
-        }
+              if (currentUser.isOwner == 'true') {
+                _sendNextTurn();
+              }
+              setState(() {});
+              break;
+            default:
+              LOGGER.log('onMessage undefined: $message ');
+              break;
+          }
+        });
         return null;
       },
       onResume: (Map<String, dynamic> message) {
@@ -235,13 +263,15 @@ class GamePageState extends State<GamePage> {
   }
 
   void _sendNextTurn() {
-    Player player = getNextPlayer();
+    GameMessage gameMessage = new GameMessage(
+        "", players.values.elementAt(indexTurn).key, getNextPlayer().key);
+
     players.forEach((k, v) {
       Map<String, Object> jsonMap = {
         "to": v.fcmKey,
         "notification": {
           "title": "NEXT_TURN",
-          "body": {"userKey": player.key},
+          "body": gameMessage.toJson(),
           "click_action": "FLUTTER_NOTIFICATION_CLICK"
         },
         "priority": 10
@@ -295,13 +325,13 @@ class GamePageState extends State<GamePage> {
             cardsOnTable[currentUser.key] < currentPlayer.cards.length);
   }
 
-  Future<void> _sendPostNotification() async {
+  Future<void> _sendHasPlayedNotification() async {
     await lock.synchronized(() async {
       if (isNotificationAllowed) {
         isNotificationAllowed = false;
 
         GameMessage gameMessage = new GameMessage(
-            currentUser.key, myCardsOnTable.elementAt(currentIndex));
+            myCardsOnTable.elementAt(currentIndex), currentUser.key, "");
         myCardsOnTable.removeAt(currentIndex);
 
         players.forEach((k, v) {
@@ -331,7 +361,8 @@ class GamePageState extends State<GamePage> {
             players.values
                 .elementAt(new Faker().randomGenerator.integer(players.length))
                 .key,
-            "Looser");
+            "",
+            "");
 
         players.forEach((k, v) {
           Map<String, Object> jsonMap = {
@@ -480,7 +511,7 @@ class GamePageState extends State<GamePage> {
                       child: RaisedButton(
                         onPressed:
                             (isNotificationAllowed && myCardsOnTable.length > 0)
-                                ? _sendPostNotification
+                                ? _sendHasPlayedNotification
                                 : null,
                         child: Text("Poser une carte"),
                       ),
