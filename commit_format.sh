@@ -1,4 +1,6 @@
-if [ -z "$1" ]
+#!/usr/bin/env bash
+
+if [[ -z "$1" ]]
 then
    echo "No commit name supplied"
 else 
