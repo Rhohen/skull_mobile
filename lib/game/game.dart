@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:faker/faker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
@@ -81,6 +82,21 @@ class GamePageState extends State<GamePage> {
   /// Boolean to know if the game need to be closed or not
   bool closeGame = false;
 
+  /// Assats location cards
+  final Map<String, String> cardsAssets = {
+    "rose": "assets/rose.png",
+    "skull": "assets/skull.png"
+  };
+
+  /// Players cards length <playerKey, current turn cards number>
+  Map<String, int> cardsOnTable;
+
+  /// Current player card deck
+  List<String> myCardsOnTable;
+
+  /// Current player card index
+  int currentIndex;
+
   GamePageState(this.lobbyId, this.currentUser);
 
   @override
@@ -112,10 +128,11 @@ class GamePageState extends State<GamePage> {
       onMessage: (Map<String, dynamic> message) async {
         var action = message['notification']['title'];
         Map body = json.decode(message['notification']['body'].toString());
+        GameMessage gameMessage = GameMessage.from(body);
+
         await lock.synchronized(() async {
           switch (action) {
             case 'PLAYER_HAS_PLAYED':
-              GameMessage gameMessage = GameMessage.from(body);
               cardsOnTable[gameMessage.currentPlayer]--;
               players[gameMessage.currentPlayer].isTurn = false;
 
@@ -127,17 +144,19 @@ class GamePageState extends State<GamePage> {
                 LOGGER.log('Message sent successfully');
               }
               if (currentUser.isOwner == 'true') {
-                _sendNextTurn();
+                _sendNextTurn(players.values.elementAt(indexTurn).key);
               }
               setState(() {});
               break;
             case 'NEXT_TURN':
-              GameMessage gameMessage = GameMessage.from(body);
               if (body != null) {
-                LOGGER.log("Previous player was " + gameMessage.currentPlayer);
-                LOGGER.log("Next player is " + gameMessage.nextPlayer);
                 gameCanStart = true;
-                players[gameMessage.currentPlayer].isTurn = false;
+                if (gameMessage.currentPlayer.isNotEmpty) {
+                  LOGGER
+                      .log("Previous player was " + gameMessage.currentPlayer);
+                  players[gameMessage.currentPlayer].isTurn = false;
+                }
+                LOGGER.log("Next player is " + gameMessage.nextPlayer);
                 players[gameMessage.nextPlayer].isTurn = true;
                 isNotificationAllowed =
                     (gameMessage.nextPlayer == currentUser.key);
@@ -146,22 +165,81 @@ class GamePageState extends State<GamePage> {
               break;
             case 'CHALLENGE_TIME':
               challengeOccurred = true;
-              GameMessage gameMessage = GameMessage.from(body);
+
+              // Actuellement le message reçu correspond à la key de la personne ayant perdu le challenge
               List<String> cardsList = players[gameMessage.message].cards;
 
               // ==== Cette partie là est temporaire, il faudra coder l'interface de challenge === //
-              int cardIndex =
-                  new Faker().randomGenerator.integer(cardsList.length);
-              LOGGER.log(gameMessage.message +
-                  " carte a supprimer : n° " +
-                  cardIndex.toString());
-              players[gameMessage.message].cards.removeAt(cardIndex);
+
+              if (cardsList.length > 0) {
+                int cardIndex =
+                    new Faker().randomGenerator.integer(cardsList.length);
+                LOGGER.log(gameMessage.message +
+                    " carte a supprimer : n° " +
+                    cardIndex.toString());
+                players[gameMessage.message].cards.removeAt(cardIndex);
+              }
+
               // ================================================================================= //
 
-              if (currentUser.isOwner == 'true') {
-                _sendNextTurn();
+              if (currentUser.isOwner == 'true' && cardsList.length > 0) {
+                _sendNextTurn(players.values.elementAt(indexTurn).key);
+              }
+
+              if (currentUser.key == gameMessage.message &&
+                  cardsList.length <= 0) {
+                _sendEliminatedNotification();
               }
               setState(() {});
+              break;
+            case 'PLAYER_IS_ELIMINATED':
+              indexTurn =
+                  (((indexTurn - 1) % players.length) + players.length) %
+                      players.length; // only useful for the game owner
+              players.remove(gameMessage.message);
+
+              setState(() {});
+              if (players.length <= 1) {
+                AwesomeDialog(
+                  customHeader: Container(
+                    width: 100.0,
+                    height: 100.0,
+                    decoration: new BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: new DecorationImage(
+                        fit: BoxFit.cover,
+                        image: AssetImage((players[currentUser.key] != null)
+                            ? 'assets/winner.png'
+                            : 'assets/looser.jpeg'),
+                      ),
+                    ),
+                  ),
+                  context: context,
+                  animType: AnimType.TOPSLIDE,
+                  tittle: (players[currentUser.key] != null)
+                      ? 'You are the winner !'
+                      : 'You just lost THE GAME !',
+                  desc: (players[currentUser.key] != null)
+                      ? 'So pleased to see you accomplishing great things.'
+                      : 'Maybe the truth is, there\'s a little bit of loser in all of us... ',
+                  btnOk: FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: new BorderRadius.circular(18.0),
+                        side: BorderSide(color: Colors.grey)),
+                    child: Text('Leave game'),
+                    onPressed: () {
+                      Navigator.popUntil(
+                          context, ModalRoute.withName(JouerPage.routeName));
+                    },
+                  ),
+                  //this is ignored
+                  btnOkOnPress: () {},
+                ).show();
+              } else {
+                if (currentUser.isOwner == 'true') {
+                  _sendNextTurn("");
+                }
+              }
               break;
             default:
               LOGGER.log('onMessage undefined: $message ');
@@ -230,7 +308,7 @@ class GamePageState extends State<GamePage> {
           if (currentUser.isOwner == 'true' && allUsersReady()) {
             gameCanStart = true;
             LOGGER.log("The game can start, sending orders to next player...");
-            _sendNextTurn();
+            _sendNextTurn(players.values.elementAt(indexTurn).key);
           }
         });
       } else if (event.snapshot.key == 'state' &&
@@ -262,9 +340,9 @@ class GamePageState extends State<GamePage> {
     return previousPlayer;
   }
 
-  void _sendNextTurn() {
-    GameMessage gameMessage = new GameMessage(
-        "", players.values.elementAt(indexTurn).key, getNextPlayer().key);
+  void _sendNextTurn(String currentPlayerKey) {
+    GameMessage gameMessage =
+        new GameMessage("", currentPlayerKey, getNextPlayer().key);
 
     players.forEach((k, v) {
       Map<String, Object> jsonMap = {
@@ -299,17 +377,6 @@ class GamePageState extends State<GamePage> {
     return Future.value(false);
   }
 
-  final Map<String, String> cardsAssets = {
-    "rose": "assets/rose.png",
-    "skull": "assets/skull.png"
-  };
-
-  var refreshFunction;
-  Map<String, int> cardsOnTable;
-  List<String> myCardsOnTable;
-
-  int currentIndex;
-
   Vector2 getPosition(Vector2 center, double radius, double angle) {
     double playerX = (center.x + radius * cos(radians(angle)));
     double playerY = (center.y + radius * sin(radians(angle)));
@@ -320,16 +387,19 @@ class GamePageState extends State<GamePage> {
       Map<String, int> cardsOnTable, Map<String, Player> players) {
     String currentUserKey = currentUser.key;
     Player currentPlayer = players[currentUserKey];
-    return (cardsOnTable[currentUser.key] < currentPlayer.cards.length - 1) ||
-        (currentPlayer.isTurn &&
-            cardsOnTable[currentUser.key] < currentPlayer.cards.length);
+
+    if (currentPlayer != null) {
+      return (cardsOnTable[currentUser.key] < currentPlayer.cards.length - 1) ||
+          (currentPlayer.isTurn &&
+              cardsOnTable[currentUser.key] < currentPlayer.cards.length);
+    }
+    return false;
   }
 
   Future<void> _sendHasPlayedNotification() async {
     await lock.synchronized(() async {
       if (isNotificationAllowed) {
         isNotificationAllowed = false;
-
         GameMessage gameMessage = new GameMessage(
             myCardsOnTable.elementAt(currentIndex), currentUser.key, "");
         myCardsOnTable.removeAt(currentIndex);
@@ -356,6 +426,7 @@ class GamePageState extends State<GamePage> {
     await lock.synchronized(() async {
       if (!challengeOccurred) {
         challengeOccurred = true;
+        isNotificationAllowed = false;
 
         GameMessage gameMessage = new GameMessage(
             players.values
@@ -380,6 +451,28 @@ class GamePageState extends State<GamePage> {
 
         setState(() {});
       }
+    });
+  }
+
+  Future<void> _sendEliminatedNotification() async {
+    await lock.synchronized(() async {
+      GameMessage gameMessage = new GameMessage(currentUser.key, "", "");
+
+      players.forEach((k, v) {
+        Map<String, Object> jsonMap = {
+          "to": v.fcmKey,
+          "notification": {
+            "title": "PLAYER_IS_ELIMINATED",
+            "body": gameMessage.toJson(),
+            "click_action": "FLUTTER_NOTIFICATION_CLICK"
+          },
+          "priority": 10
+        };
+        client.post(googleFcmUrl,
+            body: jsonEncode(jsonMap), headers: headersMap);
+      });
+
+      setState(() {});
     });
   }
 
