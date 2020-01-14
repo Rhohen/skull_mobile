@@ -81,6 +81,21 @@ class GamePageState extends State<GamePage> {
   /// Boolean to know if the game need to be closed or not
   bool closeGame = false;
 
+  /// Assats location cards
+  final Map<String, String> cardsAssets = {
+    "rose": "assets/rose.png",
+    "skull": "assets/skull.png"
+  };
+
+  /// Players cards length <playerKey, current turn cards number>
+  Map<String, int> cardsOnTable;
+
+  /// Current player card deck
+  List<String> myCardsOnTable;
+
+  /// Current player card index
+  int currentIndex;
+
   GamePageState(this.lobbyId, this.currentUser);
 
   @override
@@ -112,10 +127,11 @@ class GamePageState extends State<GamePage> {
       onMessage: (Map<String, dynamic> message) async {
         var action = message['notification']['title'];
         Map body = json.decode(message['notification']['body'].toString());
+        GameMessage gameMessage = GameMessage.from(body);
+
         await lock.synchronized(() async {
           switch (action) {
             case 'PLAYER_HAS_PLAYED':
-              GameMessage gameMessage = GameMessage.from(body);
               cardsOnTable[gameMessage.currentPlayer]--;
               players[gameMessage.currentPlayer].isTurn = false;
 
@@ -127,17 +143,19 @@ class GamePageState extends State<GamePage> {
                 LOGGER.log('Message sent successfully');
               }
               if (currentUser.isOwner == 'true') {
-                _sendNextTurn();
+                _sendNextTurn(players.values.elementAt(indexTurn).key);
               }
               setState(() {});
               break;
             case 'NEXT_TURN':
-              GameMessage gameMessage = GameMessage.from(body);
               if (body != null) {
-                LOGGER.log("Previous player was " + gameMessage.currentPlayer);
-                LOGGER.log("Next player is " + gameMessage.nextPlayer);
                 gameCanStart = true;
-                players[gameMessage.currentPlayer].isTurn = false;
+                if (gameMessage.currentPlayer.isNotEmpty) {
+                  LOGGER
+                      .log("Previous player was " + gameMessage.currentPlayer);
+                  players[gameMessage.currentPlayer].isTurn = false;
+                }
+                LOGGER.log("Next player is " + gameMessage.nextPlayer);
                 players[gameMessage.nextPlayer].isTurn = true;
                 isNotificationAllowed =
                     (gameMessage.nextPlayer == currentUser.key);
@@ -146,20 +164,42 @@ class GamePageState extends State<GamePage> {
               break;
             case 'CHALLENGE_TIME':
               challengeOccurred = true;
-              GameMessage gameMessage = GameMessage.from(body);
+
+              // Actuellement le message reçu correspond à la key de la personne ayant perdu le challenge
               List<String> cardsList = players[gameMessage.message].cards;
 
               // ==== Cette partie là est temporaire, il faudra coder l'interface de challenge === //
-              int cardIndex =
-                  new Faker().randomGenerator.integer(cardsList.length);
-              LOGGER.log(gameMessage.message +
-                  " carte a supprimer : n° " +
-                  cardIndex.toString());
-              players[gameMessage.message].cards.removeAt(cardIndex);
+
+              if (cardsList.length > 0) {
+                int cardIndex =
+                    new Faker().randomGenerator.integer(cardsList.length);
+                LOGGER.log(gameMessage.message +
+                    " carte a supprimer : n° " +
+                    cardIndex.toString());
+                players[gameMessage.message].cards.removeAt(cardIndex);
+              }
+
               // ================================================================================= //
 
+              if (currentUser.isOwner == 'true' && cardsList.length > 0) {
+                _sendNextTurn(players.values.elementAt(indexTurn).key);
+              }
+
+              if (currentUser.key == gameMessage.message &&
+                  cardsList.length <= 0) {
+                _sendEliminatedNotification();
+              }
+              setState(() {});
+              break;
+            case 'PLAYER_IS_ELIMINATED':
+              LOGGER.log("coucou");
+              indexTurn =
+                  (((indexTurn - 1) % players.length) + players.length) %
+                      players.length; // only useful for the game owner
+              players.remove(gameMessage.message);
+
               if (currentUser.isOwner == 'true') {
-                _sendNextTurn();
+                _sendNextTurn("");
               }
               setState(() {});
               break;
@@ -230,7 +270,7 @@ class GamePageState extends State<GamePage> {
           if (currentUser.isOwner == 'true' && allUsersReady()) {
             gameCanStart = true;
             LOGGER.log("The game can start, sending orders to next player...");
-            _sendNextTurn();
+            _sendNextTurn(players.values.elementAt(indexTurn).key);
           }
         });
       } else if (event.snapshot.key == 'state' &&
@@ -262,9 +302,9 @@ class GamePageState extends State<GamePage> {
     return previousPlayer;
   }
 
-  void _sendNextTurn() {
-    GameMessage gameMessage = new GameMessage(
-        "", players.values.elementAt(indexTurn).key, getNextPlayer().key);
+  void _sendNextTurn(String currentPlayerKey) {
+    GameMessage gameMessage =
+        new GameMessage("", currentPlayerKey, getNextPlayer().key);
 
     players.forEach((k, v) {
       Map<String, Object> jsonMap = {
@@ -298,17 +338,6 @@ class GamePageState extends State<GamePage> {
     Navigator.popUntil(context, ModalRoute.withName(JouerPage.routeName));
     return Future.value(false);
   }
-
-  final Map<String, String> cardsAssets = {
-    "rose": "assets/rose.png",
-    "skull": "assets/skull.png"
-  };
-
-  var refreshFunction;
-  Map<String, int> cardsOnTable;
-  List<String> myCardsOnTable;
-
-  int currentIndex;
 
   Vector2 getPosition(Vector2 center, double radius, double angle) {
     double playerX = (center.x + radius * cos(radians(angle)));
@@ -380,6 +409,28 @@ class GamePageState extends State<GamePage> {
 
         setState(() {});
       }
+    });
+  }
+
+  Future<void> _sendEliminatedNotification() async {
+    await lock.synchronized(() async {
+      GameMessage gameMessage = new GameMessage(currentUser.key, "", "");
+
+      players.forEach((k, v) {
+        Map<String, Object> jsonMap = {
+          "to": v.fcmKey,
+          "notification": {
+            "title": "PLAYER_IS_ELIMINATED",
+            "body": gameMessage.toJson(),
+            "click_action": "FLUTTER_NOTIFICATION_CLICK"
+          },
+          "priority": 10
+        };
+        client.post(googleFcmUrl,
+            body: jsonEncode(jsonMap), headers: headersMap);
+      });
+
+      setState(() {});
     });
   }
 
