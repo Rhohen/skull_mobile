@@ -1,31 +1,42 @@
+import 'dart:developer';
+
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
+import 'lobby/lobby.dart';
+import 'lobby/lobbyArguments.dart';
+import 'lobby/userModel.dart';
+
 class RejoindrePage extends StatefulWidget {
+  static const routeName = '/RejoindrePage';
+
   @override
   _RejoindrePage createState() => _RejoindrePage();
 }
 
 class _RejoindrePage extends State<RejoindrePage> {
-  var _searchview = new TextEditingController();
+  DatabaseReference lobbyRef;
+  Map availableRooms = new Map<String, dynamic>();
+  Map filteredRooms;
 
-  final List<String> _nebulae = [
-    "Orion",
-    "Boomerang",
-    "Cat's Eye",
-    "Pelican",
-    "Ghost Head",
-    "Witch Head",
-    "Snake",
-    "Ant",
-    "Bernad 68",
-    "Flame",
-    "Eagle",
-    "Horse Head",
-    "Elephant's Trunk",
-    "Butterfly"
-  ];
-  List<String> _filterList;
-  final List<int> colorCodes = <int>[600, 500, 400, 300, 200, 100];
+  @override
+  void initState() {
+    super.initState();
+    final FirebaseDatabase database = FirebaseDatabase.instance;
+
+    lobbyRef = database.reference().child('lobbies');
+
+    lobbyRef.once().then((DataSnapshot snapshot) {
+      if (snapshot != null) {
+        if (snapshot.value != null) {
+          availableRooms = new Map<String, dynamic>.from(snapshot.value);
+        }
+      }
+      setState(() {});
+    });
+  }
+
+  var _searchview = new TextEditingController();
 
   bool _firstSearch = true;
   String _query = "";
@@ -81,44 +92,73 @@ class _RejoindrePage extends State<RejoindrePage> {
   Widget _createListView() {
     return new Flexible(
       child: new ListView.builder(
-          itemCount: _nebulae.length,
+          itemCount: availableRooms.length,
           itemBuilder: (BuildContext context, int index) {
             return new Card(
               color: Colors.white,
               elevation: 5.0,
-              child: new Container(
+              child: new InkWell(
+                  splashColor: Colors.blue.withAlpha(30),
+                  onTap: () {
+                    print('Lobby Selected');
+                    LobbyArguments lobbyArgs = new LobbyArguments(
+                        "-Lx7KJcaKvlwpe2z2dEp",
+                        User.generate("admin"),
+                        context);
+                    Navigator.pushNamed(context, Lobby.routeName,
+                        arguments: lobbyArgs);
+                  },
+                  child: ListTile(
+                    leading: (availableRooms.length > 0)
+                        ? Icon(Icons.lock, size: 32)
+                        : null,
+                    title: new Text("${availableRooms.keys}"),
+                    subtitle: new Text("Joueurs 3/8"),
+                    trailing: Icon(Icons.play_circle_outline),
+                  )),
+              /*child: new Container(
                 margin: EdgeInsets.all(15.0),
-                child: new Text("${_nebulae[index]}"),
-              ),
+                child: new Text("${availableRooms.keys}"),
+              ),*/
             );
           }),
     );
   }
 
   Widget _performSearch() {
-    _filterList = new List<String>();
-    for (int i = 0; i < _nebulae.length; i++) {
-      var item = _nebulae[i];
-
-      if (item.toLowerCase().contains(_query.toLowerCase())) {
-        _filterList.add(item);
-      }
-    }
+    filteredRooms = new Map<String, dynamic>();
+    availableRooms.forEach((k, v) => {
+          if (k.toString().toLowerCase().contains(_query.toLowerCase()))
+            {filteredRooms.putIfAbsent(k, () => v)}
+        });
     return _createFilteredListView();
   }
 
   Widget _createFilteredListView() {
     return new Flexible(
       child: new ListView.builder(
-          itemCount: _filterList.length,
+          itemCount: filteredRooms.length,
           itemBuilder: (BuildContext context, int index) {
             return new Card(
               color: Colors.white,
               elevation: 5.0,
-              child: new Container(
+              child: new InkWell(
+                  splashColor: Colors.blue.withAlpha(30),
+                  onTap: () {
+                    print('Lobby Selected');
+                  },
+                  child: ListTile(
+                    leading: (filteredRooms.length > 0)
+                        ? Icon(Icons.lock, size: 32)
+                        : null,
+                    title: new Text("${filteredRooms.keys}"),
+                    subtitle: new Text("Joueurs 3/8"),
+                    trailing: Icon(Icons.play_circle_outline),
+                  )),
+              /*child: new Container(
                 margin: EdgeInsets.all(15.0),
-                child: new Text("${_filterList[index]}"),
-              ),
+                child: new Text("${availableRooms.keys}"),
+              ),*/
             );
           }),
     );
