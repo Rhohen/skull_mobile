@@ -39,7 +39,7 @@ class _Lobby extends State<Lobby> {
     super.initState();
     final FirebaseDatabase database = FirebaseDatabase.instance;
 
-    lobbyRef = database.reference().child('lobbies').child(lobbyId);
+    lobbyRef = database.reference().child('lobbies').child(lobbyId).push();
 
     lobbyRef.once().then((DataSnapshot snapshot) {
       if (snapshot != null) {
