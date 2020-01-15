@@ -6,6 +6,7 @@ import 'package:skull_mobile/lobby/lobby.dart';
 import 'package:skull_mobile/lobby/lobbyArguments.dart';
 import 'package:skull_mobile/rejoindre.dart';
 import 'accueil.dart';
+import 'creer.dart';
 import 'game/gameArguments.dart';
 
 void main() => runApp(MyApp());
@@ -47,6 +48,13 @@ class MyApp extends StatelessWidget {
             GameArguments gameArguments = settings.arguments;
             return PageTransition(
               child: GamePage(gameArguments.lobbyId, gameArguments.currentUser),
+              type: PageTransitionType.fade,
+              settings: settings,
+            );
+            break;
+          case CreerPage.routeName:
+            return PageTransition(
+              child: CreerPage(),
               type: PageTransitionType.fade,
               settings: settings,
             );
