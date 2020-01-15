@@ -30,6 +30,27 @@ class JouerPage extends StatelessWidget {
               },
               child: Text('Rejoindre partie', style: TextStyle(fontSize: 20)),
             ),
+            RaisedButton(
+              color: Colors.blueAccent,
+              textColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: new BorderRadius.circular(18.0),
+                  side: BorderSide(color: Colors.blue)),
+              onPressed: () {
+                LobbyArguments lobbyArgs = new LobbyArguments(
+                  "-Lx7KJcaKvlwpe2z2dEp",
+                  User.generate("admin"),
+                  context,
+                );
+                Navigator.pushNamed(
+                  context,
+                  Lobby.routeName,
+                  arguments: lobbyArgs,
+                );
+              },
+              child: Text('[DEBUG] Pas touche c\'est à nico',
+                  style: TextStyle(fontSize: 20)),
+            ),
           ],
         ),
       ),

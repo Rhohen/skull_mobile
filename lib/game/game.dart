@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:faker/faker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
@@ -183,6 +184,7 @@ class GamePageState extends State<GamePage> {
 
               if (currentUser.isOwner == 'true' && cardsList.length > 0) {
                 _sendNextTurn(players.values.elementAt(indexTurn).key);
+<<<<<<< HEAD
               }
 
               if (currentUser.key == gameMessage.message &&
@@ -200,8 +202,64 @@ class GamePageState extends State<GamePage> {
 
               if (currentUser.isOwner == 'true') {
                 _sendNextTurn("");
+=======
+>>>>>>> 7c6b0f2c69195d27a93b9f63804fdaa243c93f53
+              }
+
+              if (currentUser.key == gameMessage.message &&
+                  cardsList.length <= 0) {
+                _sendEliminatedNotification();
               }
               setState(() {});
+              break;
+            case 'PLAYER_IS_ELIMINATED':
+              indexTurn =
+                  (((indexTurn - 1) % players.length) + players.length) %
+                      players.length; // only useful for the game owner
+              players.remove(gameMessage.message);
+
+              setState(() {});
+              if (players.length <= 1) {
+                AwesomeDialog(
+                  customHeader: Container(
+                    width: 100.0,
+                    height: 100.0,
+                    decoration: new BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: new DecorationImage(
+                        fit: BoxFit.cover,
+                        image: AssetImage((players[currentUser.key] != null)
+                            ? 'assets/winner.png'
+                            : 'assets/looser.jpeg'),
+                      ),
+                    ),
+                  ),
+                  context: context,
+                  animType: AnimType.TOPSLIDE,
+                  tittle: (players[currentUser.key] != null)
+                      ? 'You are the winner !'
+                      : 'You just lost THE GAME !',
+                  desc: (players[currentUser.key] != null)
+                      ? 'So pleased to see you accomplishing great things.'
+                      : 'Maybe the truth is, there\'s a little bit of loser in all of us... ',
+                  btnOk: FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: new BorderRadius.circular(18.0),
+                        side: BorderSide(color: Colors.grey)),
+                    child: Text('Leave game'),
+                    onPressed: () {
+                      Navigator.popUntil(
+                          context, ModalRoute.withName(JouerPage.routeName));
+                    },
+                  ),
+                  //this is ignored
+                  btnOkOnPress: () {},
+                ).show();
+              } else {
+                if (currentUser.isOwner == 'true') {
+                  _sendNextTurn("");
+                }
+              }
               break;
             default:
               LOGGER.log('onMessage undefined: $message ');
@@ -349,16 +407,19 @@ class GamePageState extends State<GamePage> {
       Map<String, int> cardsOnTable, Map<String, Player> players) {
     String currentUserKey = currentUser.key;
     Player currentPlayer = players[currentUserKey];
-    return (cardsOnTable[currentUser.key] < currentPlayer.cards.length - 1) ||
-        (currentPlayer.isTurn &&
-            cardsOnTable[currentUser.key] < currentPlayer.cards.length);
+
+    if (currentPlayer != null) {
+      return (cardsOnTable[currentUser.key] < currentPlayer.cards.length - 1) ||
+          (currentPlayer.isTurn &&
+              cardsOnTable[currentUser.key] < currentPlayer.cards.length);
+    }
+    return false;
   }
 
   Future<void> _sendHasPlayedNotification() async {
     await lock.synchronized(() async {
       if (isNotificationAllowed) {
         isNotificationAllowed = false;
-
         GameMessage gameMessage = new GameMessage(
             myCardsOnTable.elementAt(currentIndex), currentUser.key, "");
         myCardsOnTable.removeAt(currentIndex);
@@ -385,6 +446,7 @@ class GamePageState extends State<GamePage> {
     await lock.synchronized(() async {
       if (!challengeOccurred) {
         challengeOccurred = true;
+        isNotificationAllowed = false;
 
         GameMessage gameMessage = new GameMessage(
             players.values

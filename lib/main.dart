@@ -5,7 +5,6 @@ import 'package:skull_mobile/jouer.dart';
 import 'package:skull_mobile/lobby/lobby.dart';
 import 'package:skull_mobile/lobby/lobbyArguments.dart';
 import 'package:skull_mobile/rejoindre.dart';
-import 'package:skull_mobile/widgetTester.dart';
 import 'accueil.dart';
 import 'game/gameArguments.dart';
 
@@ -21,13 +20,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       onGenerateRoute: (settings) {
         switch (settings.name) {
-          case WidgetTester.routeName:
-            return PageTransition(
-              child: WidgetTester(),
-              type: PageTransitionType.fade,
-              settings: settings,
-            );
-            break;
           case JouerPage.routeName:
             return PageTransition(
               child: JouerPage(),
