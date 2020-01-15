@@ -191,7 +191,11 @@ class _CreerPage extends State<CreerPage> {
     final FirebaseDatabase database = FirebaseDatabase.instance;
     lobbyRef = database.reference().child('lobbies').push();
     lobbyRef
-        .set({"name": name, "password": password, "nbPlayerMax": nbPlayerMax})
+        .set({
+          "name": name,
+          "password": password,
+          "nbPlayerMax": nbPlayerMax.toInt()
+        })
         .whenComplete(() => {redirectToLobby(context, lobbyRef.key)})
         .timeout(Duration(seconds: 5), onTimeout: () {
           setState(() {
