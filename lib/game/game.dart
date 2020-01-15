@@ -149,12 +149,13 @@ class GamePageState extends State<GamePage> {
               break;
             case 'NEXT_TURN':
               if (body != null) {
-                LOGGER.log("Previous player was " + gameMessage.currentPlayer);
-                LOGGER.log("Next player is " + gameMessage.nextPlayer);
                 gameCanStart = true;
                 if (gameMessage.currentPlayer.isNotEmpty) {
+                  LOGGER
+                      .log("Previous player was " + gameMessage.currentPlayer);
                   players[gameMessage.currentPlayer].isTurn = false;
                 }
+                LOGGER.log("Next player is " + gameMessage.nextPlayer);
                 players[gameMessage.nextPlayer].isTurn = true;
                 isNotificationAllowed =
                     (gameMessage.nextPlayer == currentUser.key);
@@ -191,6 +192,7 @@ class GamePageState extends State<GamePage> {
               setState(() {});
               break;
             case 'PLAYER_IS_ELIMINATED':
+              LOGGER.log("coucou");
               indexTurn =
                   (((indexTurn - 1) % players.length) + players.length) %
                       players.length; // only useful for the game owner
