@@ -184,26 +184,6 @@ class GamePageState extends State<GamePage> {
 
               if (currentUser.isOwner == 'true' && cardsList.length > 0) {
                 _sendNextTurn(players.values.elementAt(indexTurn).key);
-<<<<<<< HEAD
-              }
-
-              if (currentUser.key == gameMessage.message &&
-                  cardsList.length <= 0) {
-                _sendEliminatedNotification();
-              }
-              setState(() {});
-              break;
-            case 'PLAYER_IS_ELIMINATED':
-              LOGGER.log("coucou");
-              indexTurn =
-                  (((indexTurn - 1) % players.length) + players.length) %
-                      players.length; // only useful for the game owner
-              players.remove(gameMessage.message);
-
-              if (currentUser.isOwner == 'true') {
-                _sendNextTurn("");
-=======
->>>>>>> 7c6b0f2c69195d27a93b9f63804fdaa243c93f53
               }
 
               if (currentUser.key == gameMessage.message &&
