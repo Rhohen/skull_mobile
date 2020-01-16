@@ -39,7 +39,7 @@ class _Lobby extends State<Lobby> {
     super.initState();
     final FirebaseDatabase database = FirebaseDatabase.instance;
 
-    lobbyRef = database.reference().child('lobbies').child(lobbyId).push();
+    lobbyRef = database.reference().child('lobbies').child(lobbyId);
 
     lobbyRef.once().then((DataSnapshot snapshot) {
       if (snapshot != null) {
@@ -199,11 +199,8 @@ class _Lobby extends State<Lobby> {
                     },
                     color: !(currentUser.isReady.toLowerCase() == 'false')
                         ? Colors.green
-                        : Colors.redAccent,
-                    child: !(currentUser.isReady.toLowerCase() == 'false')
-                        ? new Icon(Icons.check, color: Colors.white, size: 35.0)
-                        : new Icon(Icons.close,
-                            color: Colors.white, size: 35.0),
+                        : Colors.grey,
+                    child: Icon(Icons.check, color: Colors.white, size: 35.0),
                     shape: new CircleBorder(),
                     elevation: 2.0,
                     padding: EdgeInsets.all(12),

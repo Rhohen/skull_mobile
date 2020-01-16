@@ -6,6 +6,7 @@ import 'package:skull_mobile/lobby/lobby.dart';
 import 'package:skull_mobile/lobby/lobbyArguments.dart';
 import 'package:skull_mobile/rejoindre/rejoindre.dart';
 import 'accueil.dart';
+import 'creer.dart';
 import 'game/gameArguments.dart';
 
 void main() => runApp(MyApp());
@@ -51,16 +52,19 @@ class MyApp extends StatelessWidget {
               settings: settings,
             );
             break;
+          case CreerPage.routeName:
+            return PageTransition(
+              child: CreerPage(),
+              type: PageTransitionType.fade,
+              settings: settings,
+            );
+            break;
           default:
             return null;
         }
       },
       title: 'Skull Mobile', // App name visible on task manager
       home: Scaffold(
-        appBar: AppBar(
-          title: Text('Skull Mobile', style: TextStyle(fontSize: 20)),
-          backgroundColor: Colors.grey[800],
-        ),
         body: AccueilPage(),
       ),
     );

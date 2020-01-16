@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skull_mobile/creer.dart';
 import 'package:skull_mobile/lobby/lobbyArguments.dart';
 import 'package:skull_mobile/lobby/userModel.dart';
 import 'package:skull_mobile/rejoindre/rejoindre.dart';
@@ -21,7 +22,9 @@ class JouerPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             RaisedButton(
-              onPressed: null,
+              onPressed: () {
+                Navigator.pushNamed(context, CreerPage.routeName);
+              },
               child: Text('Créer partie', style: TextStyle(fontSize: 20)),
             ),
             RaisedButton(

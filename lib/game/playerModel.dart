@@ -31,8 +31,16 @@ class Player {
   }
 
   factory Player.fromUser(User user) {
-    return new Player(user.key, user.name, user.profileImg, user.fcmKey,
-        ["rose", "skull"], false, user.isOwner, false, user.isReady);
+    return new Player(
+        user.key,
+        user.name,
+        user.profileImg,
+        user.fcmKey,
+        ["rose", "rose", "rose", "skull"],
+        false,
+        user.isOwner,
+        false,
+        user.isReady);
   }
 
   toJson() {
@@ -60,7 +68,7 @@ class Player {
   }
 
   void copyFromUser(User user) {
-    this.cards = ["rose", "skull"];
+    this.cards = ["rose", "rose", "rose", "skull"];
     this.isOwner = user.isOwner;
     this.profileImg = user.profileImg;
     this.hasScored = false;
@@ -74,7 +82,7 @@ class Player {
     String photo = 'assets/pic-' +
         faker.randomGenerator.integer(7, min: 1).toString() +
         '.png';
-    List<String> cards = ["rose", "skull"];
+    List<String> cards = ["rose", "rose", "rose", "skull"];
     return new Player("-1", faker.person.name(), photo, "0", cards,
         faker.randomGenerator.boolean(), "false", false, "true");
   }
