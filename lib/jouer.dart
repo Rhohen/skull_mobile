@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skull_mobile/lobby/lobbyArguments.dart';
 import 'package:skull_mobile/lobby/userModel.dart';
-import 'package:skull_mobile/rejoindre.dart';
+import 'package:skull_mobile/rejoindre/rejoindre.dart';
 import 'lobby/lobby.dart';
 
 class JouerPage extends StatelessWidget {

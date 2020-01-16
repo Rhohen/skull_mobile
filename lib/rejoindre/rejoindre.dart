@@ -1,13 +1,7 @@
-import 'dart:developer';
-
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:skull_mobile/lobby/lobbyModel.dart';
-
-import 'lobby/lobby.dart';
-import 'lobby/lobbyArguments.dart';
-import 'lobby/userModel.dart';
+import 'package:skull_mobile/rejoindre/dialogForm.dart';
 
 class RejoindrePage extends StatefulWidget {
   static const routeName = '/RejoindrePage';
@@ -49,11 +43,9 @@ class _RejoindrePage extends State<RejoindrePage> {
   }
 
   var _searchview = new TextEditingController();
-  var _inputPassword = new TextEditingController();
 
   bool _firstSearch = true;
   String _query = "";
-  String _password = "";
 
   _RejoindrePage() {
     //Register a closure to be called when the object changes.
@@ -70,12 +62,6 @@ class _RejoindrePage extends State<RejoindrePage> {
           _query = _searchview.text;
         });
       }
-    });
-
-    _inputPassword.addListener(() {
-      setState(() {
-        _password = _inputPassword.text;
-      });
     });
   }
 
@@ -119,42 +105,11 @@ class _RejoindrePage extends State<RejoindrePage> {
               elevation: 5.0,
               child: new InkWell(
                   splashColor: Colors.blue.withAlpha(30),
-                  onTap: () => (_lobbyList[index].password != null &&
-                          _lobbyList[index].password != "")
-                      ? showDialog(
-                          context: context,
-                          child: SimpleDialog(
-                            title: Text('Entrez le mot de passe'),
-                            children: <Widget>[
-                              TextField(
-                                controller: _inputPassword,
-                                decoration: InputDecoration(
-                                  hintText: 'mot de passe',
-                                ),
-                              ),
-                              SimpleDialogOption(
-                                child: Text('Annuler'),
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                              ),
-                              SimpleDialogOption(
-                                child: Text('Valider'),
-                                onPressed: () =>
-                                    (checkPassword(_lobbyList[index].password))
-                                        ? Navigator.pushNamed(
-                                            context, Lobby.routeName,
-                                            arguments: new LobbyArguments(
-                                                _lobbyList[index].key,
-                                                User.generate("admin"),
-                                                context))
-                                        : {print('mauvais mdp')},
-                              ),
-                            ],
-                          ))
-                      : Navigator.pushNamed(context, Lobby.routeName,
-                          arguments: new LobbyArguments("-Lx7KJcaKvlwpe2z2dEp",
-                              User.generate("admin"), context)),
+                  onTap: () => showDialog(
+                        context: context,
+                        child: DialogForm(
+                            _lobbyList[index].key, _lobbyList[index].password),
+                      ),
                   child: ListTile(
                     leading: (_lobbyList[index].password != null &&
                             _lobbyList[index].password != "")
@@ -189,31 +144,23 @@ class _RejoindrePage extends State<RejoindrePage> {
               elevation: 5.0,
               child: new InkWell(
                   splashColor: Colors.blue.withAlpha(30),
-                  onTap: () {
-                    print('Lobby Selected');
-                  },
+                  onTap: () => showDialog(
+                        context: context,
+                        child: DialogForm(_filteredLobbyList[index].key,
+                            _filteredLobbyList[index].password),
+                      ),
                   child: ListTile(
-                    leading: (_lobbyList[index].password.isEmpty)
+                    leading: (_filteredLobbyList[index].password.isEmpty)
                         ? null
                         : Icon(Icons.lock, size: 32),
-                    title: new Text("${_lobbyList[index].name}"),
-                    subtitle:
-                        new Text("Joueurs 3/${_lobbyList[index].nbPlayerMax}"),
+                    title: new Text("${_filteredLobbyList[index].name}"),
+                    subtitle: new Text(
+                        "Joueurs 3/${_filteredLobbyList[index].nbPlayerMax}"),
                     trailing: Icon(Icons.play_circle_outline),
                   )),
             );
           }),
     );
-  }
-
-  checkPassword(String password) {
-    print(password);
-    print(_password);
-    if (_password == password) {
-      return true;
-    } else {
-      return false;
-    }
   }
 
   _onLobbyAdded(Event event) {

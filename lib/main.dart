@@ -4,7 +4,7 @@ import 'package:skull_mobile/game/game.dart';
 import 'package:skull_mobile/jouer.dart';
 import 'package:skull_mobile/lobby/lobby.dart';
 import 'package:skull_mobile/lobby/lobbyArguments.dart';
-import 'package:skull_mobile/rejoindre.dart';
+import 'package:skull_mobile/rejoindre/rejoindre.dart';
 import 'accueil.dart';
 import 'game/gameArguments.dart';
 
