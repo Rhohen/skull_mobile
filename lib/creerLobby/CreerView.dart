@@ -4,44 +4,42 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class CreerPageView {
-
-  Future<bool> getAwesomeDialog(BuildContext context){
+  Future<bool> getAwesomeDialog(BuildContext context) {
     return AwesomeDialog(
-      context: context,
-      dialogType: DialogType.WARNING,
-      animType: AnimType.TOPSLIDE,
-      tittle: 'Vous êtes sûr ?',
-      desc: 'Les paramètres ne seront pas sauvegardés',
-      btnCancelOnPress: () {},
-      btnOkOnPress: () {
-        Navigator.pop(context);
-      }
-    ).show();
+        context: context,
+        dialogType: DialogType.WARNING,
+        animType: AnimType.TOPSLIDE,
+        tittle: 'Vous êtes sûr ?',
+        desc: 'Les paramètres ne seront pas sauvegardés',
+        btnCancelOnPress: () {},
+        btnOkOnPress: () {
+          Navigator.pop(context);
+        }).show();
   }
 
-  getNameDecorator(){
+  getNameDecorator() {
     return InputDecoration(
       labelText: 'Nom de la partie',
       labelStyle: TextStyle(color: Colors.grey[700]),
-      enabledBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: Colors.grey[700])),
-      focusedBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: Colors.grey[700])),
+      enabledBorder:
+          UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey[700])),
+      focusedBorder:
+          UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey[700])),
     );
   }
 
-  getPasswordDecorator(){
+  getPasswordDecorator() {
     return InputDecoration(
       labelText: 'Mot de passe',
       labelStyle: TextStyle(color: Colors.grey[700]),
-      enabledBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: Colors.grey[700])),
-      focusedBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: Colors.grey[700])),
+      enabledBorder:
+          UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey[700])),
+      focusedBorder:
+          UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey[700])),
     );
   }
 
-  Widget getNumberPlayerText(){
+  Widget getNumberPlayerText() {
     return Text(
       '\n Nombre de joueurs Max:',
       style: TextStyle(
@@ -51,7 +49,7 @@ class CreerPageView {
     );
   }
 
-  Widget getImage(String path, double logoSize){
+  Widget getImage(String path, double logoSize) {
     return Image(
       image: AssetImage(path),
       height: logoSize,
@@ -59,7 +57,7 @@ class CreerPageView {
     );
   }
 
-  Widget getHourglassLoading(){
+  Widget getHourglassLoading() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -71,12 +69,10 @@ class CreerPageView {
     );
   }
 
-  Widget getSubmitButtonText(){
+  Widget getSubmitButtonText() {
     return Text(
       'Créer la Partie',
       style: TextStyle(fontSize: 20),
     );
   }
-
-
 }

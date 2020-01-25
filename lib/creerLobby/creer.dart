@@ -78,60 +78,55 @@ class _CreerPage extends State<CreerPage> {
     const double horizontal = 46.0;
 
     return Container(
-      margin: new EdgeInsets.all(15.0),
-      child: Container(
-        alignment: Alignment.center,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: vertical,
-            horizontal: horizontal,
-          ),
-          child: ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(8.0),
-            children: <Widget>[
-              view.getImage('assets/skull.png', logoSize),
-              TextFormField(
-                decoration: view.getNameDecorator(),
-                maxLength: 32,
-                validator: validateName,
-                onSaved: (String val) {
-                  name = val;
-                },
-              ),
-              TextFormField(
-                  decoration: view.getPasswordDecorator(),
-                  keyboardType: TextInputType.text,
-                  maxLength: 32,
-                  onSaved: (String val) {
-                    password = val;
-                  }),
-              Container(
-                child: view.getNumberPlayerText()
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Slider(
-                    activeColor: Colors.grey[800],
-                    inactiveColor: Colors.grey[400],
-                    min: 3,
-                    max: 10,
-                    onChanged: (_value) {
-                      setState(() => nbPlayerMax = _value);
-                    },
-                    value: nbPlayerMax,
-                  ),
-                  Text(nbPlayerMax.toInt().toString()),
-                ],
-              ),
-              SizedBox(height: 15.0),
-              _submitButton(context),
-            ],
-          )
-        )
-      )
-    );
+        margin: new EdgeInsets.all(15.0),
+        child: Container(
+            alignment: Alignment.center,
+            child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: vertical,
+                  horizontal: horizontal,
+                ),
+                child: ListView(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.all(8.0),
+                  children: <Widget>[
+                    view.getImage('assets/skull.png', logoSize),
+                    TextFormField(
+                      decoration: view.getNameDecorator(),
+                      maxLength: 32,
+                      validator: validateName,
+                      onSaved: (String val) {
+                        name = val;
+                      },
+                    ),
+                    TextFormField(
+                        decoration: view.getPasswordDecorator(),
+                        keyboardType: TextInputType.text,
+                        maxLength: 32,
+                        onSaved: (String val) {
+                          password = val;
+                        }),
+                    Container(child: view.getNumberPlayerText()),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Slider(
+                          activeColor: Colors.grey[800],
+                          inactiveColor: Colors.grey[400],
+                          min: 3,
+                          max: 10,
+                          onChanged: (_value) {
+                            setState(() => nbPlayerMax = _value);
+                          },
+                          value: nbPlayerMax,
+                        ),
+                        Text(nbPlayerMax.toInt().toString()),
+                      ],
+                    ),
+                    SizedBox(height: 15.0),
+                    _submitButton(context),
+                  ],
+                ))));
   }
 
   _submitButton(BuildContext context) {
@@ -167,22 +162,19 @@ class _CreerPage extends State<CreerPage> {
     final FirebaseDatabase database = FirebaseDatabase.instance;
     lobbyRef = database.reference().child('lobbies').push();
     lobbyRef
-      .set({
-        "name": name,
-        "password": password,
-        "nbPlayerMax": nbPlayerMax.toInt()
-      })
-      .whenComplete(() => {_redirectToLobby(context, lobbyRef.key)})
-      .timeout(
-        Duration(seconds: 5),
-        onTimeout: () {
+        .set({
+          "name": name,
+          "password": password,
+          "nbPlayerMax": nbPlayerMax.toInt()
+        })
+        .whenComplete(() => {_redirectToLobby(context, lobbyRef.key)})
+        .timeout(Duration(seconds: 5), onTimeout: () {
           setState(() {
             isLoading = false;
           });
           Toast.show("Erreur de connexion avec la base de donnée", context,
               duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
-        }
-      );
+        });
   }
 
   _redirectToLobby(BuildContext context, String id) {
@@ -197,5 +189,4 @@ class _CreerPage extends State<CreerPage> {
     }
     return null;
   }
-
 }
