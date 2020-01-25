@@ -119,22 +119,27 @@ class _Lobby extends State<Lobby> {
       if (event.snapshot != null &&
           currentUser != null &&
           currentUser.key == event.snapshot.key) {
-        if (currentUser.isOwner == 'true') {
+        if(users.length == 0){
+          lobbyRef.remove().then((_) {
+            Navigator.pop(context);
+          });
+        }
+        else if (currentUser.isOwner == 'true') {
           lobbyRef.once().then(
             (DataSnapshot snapshot) {
               if (snapshot != null &&
-                  snapshot.value != null &&
-                  snapshot.value is Map<dynamic, dynamic>) {
-                Map lobbyMap = new Map<String, dynamic>.from(snapshot.value);
-                lobbyMap.removeWhere((k, v) =>
-                    k == currentUser.key || !(v is Map<dynamic, dynamic>));
-                if (lobbyMap.entries.length > 0) {
-                  Map userData = new Map<String, dynamic>.from(
-                      lobbyMap.entries.first.value);
-                  User user = User.from(userData);
-                  user.isOwner = 'true';
-                  lobbyRef.child(lobbyMap.entries.first.key).set(user.toJson());
-                }
+                snapshot.value != null &&
+                snapshot.value is Map<dynamic, dynamic>) {
+                  Map lobbyMap = new Map<String, dynamic>.from(snapshot.value);
+                  lobbyMap.removeWhere((k, v) =>
+                      k == currentUser.key || !(v is Map<dynamic, dynamic>));
+                  if (lobbyMap.entries.length > 0) {
+                    Map userData = new Map<String, dynamic>.from(
+                    lobbyMap.entries.first.value);
+                    User user = User.from(userData);
+                    user.isOwner = 'true';
+                    lobbyRef.child(lobbyMap.entries.first.key).set(user.toJson());
+                  }
               }
             },
           );

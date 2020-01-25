@@ -6,7 +6,7 @@ import 'package:skull_mobile/lobby/lobby.dart';
 import 'package:skull_mobile/lobby/lobbyArguments.dart';
 import 'package:skull_mobile/rejoindre/rejoindre.dart';
 import 'accueil.dart';
-import 'creer.dart';
+import 'creerLobby/creer.dart';
 import 'game/gameArguments.dart';
 
 void main() => runApp(MyApp());
