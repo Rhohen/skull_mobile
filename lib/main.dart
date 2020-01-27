@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:skull_mobile/connexion/login.dart';
 import 'package:skull_mobile/game/game.dart';
 import 'package:skull_mobile/jouer.dart';
 import 'package:skull_mobile/lobby/lobby.dart';
 import 'package:skull_mobile/lobby/lobbyArguments.dart';
 import 'package:skull_mobile/rejoindre/rejoindre.dart';
+import 'package:skull_mobile/splash.dart';
 import 'accueil.dart';
 import 'creerLobby/creer.dart';
 import 'game/gameArguments.dart';
@@ -59,6 +61,20 @@ class MyApp extends StatelessWidget {
               settings: settings,
             );
             break;
+          case LoginPage.routeName:
+            return PageTransition(
+              child: LoginPage(),
+              type: PageTransitionType.fade,
+              settings: settings,
+            );
+            break;
+          case AccueilPage.routeName:
+            return PageTransition(
+              child: AccueilPage(),
+              type: PageTransitionType.fade,
+              settings: settings,
+            );
+            break;
           default:
             return null;
         }
@@ -69,7 +85,7 @@ class MyApp extends StatelessWidget {
           title: Text('Skull Mobile', style: TextStyle(fontSize: 20)),
           backgroundColor: Colors.grey[800],
         ),
-        body: AccueilPage(),
+        body: SplashPage(),
       ),
     );
   }
