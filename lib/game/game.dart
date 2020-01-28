@@ -21,6 +21,7 @@ import 'package:vector_math/vector_math.dart' hide Colors;
 import 'dart:developer' as LOGGER;
 import '../jouer.dart';
 import 'EGameState.dart';
+import 'defiDialog.dart';
 
 class GamePage extends StatefulWidget {
   static const routeName = '/GamePage';
@@ -97,6 +98,9 @@ class GamePageState extends State<GamePage> {
   /// Current player card index
   int currentIndex;
 
+  /// Number of card currently on the table
+  int nbCarteJouer;
+
   GamePageState(this.lobbyId, this.currentUser);
 
   @override
@@ -107,6 +111,7 @@ class GamePageState extends State<GamePage> {
     challengeOccurred = true;
     currentIndex = 0;
     indexTurn = 0;
+    nbCarteJouer = 0;
     cardsOnTable = new HashMap();
     myCardsOnTable = new List();
 
@@ -133,6 +138,7 @@ class GamePageState extends State<GamePage> {
         await lock.synchronized(() async {
           switch (action) {
             case 'PLAYER_HAS_PLAYED':
+              nbCarteJouer++;
               cardsOnTable[gameMessage.currentPlayer]--;
               players[gameMessage.currentPlayer].isTurn = false;
 
@@ -150,6 +156,7 @@ class GamePageState extends State<GamePage> {
               break;
             case 'NEXT_TURN':
               if (body != null) {
+                nbCarteJouer = 0;
                 gameCanStart = true;
                 if (gameMessage.currentPlayer.isNotEmpty) {
                   LOGGER
@@ -452,7 +459,15 @@ class GamePageState extends State<GamePage> {
         setState(() {});
       }
     });
+    return openPopup();
   }
+
+  Future<void> openPopup() {
+    return showDialog(
+      context: context,
+      child: DefiDialog(nbCarteJouer),
+    );
+  } 
 
   Future<void> _sendEliminatedNotification() async {
     await lock.synchronized(() async {
