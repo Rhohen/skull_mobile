@@ -1,8 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:skull_mobile/connexion/login.dart';
 import 'accueil.dart';
 
@@ -25,17 +23,42 @@ class _SplashPage extends State<SplashPage>
       duration: new Duration(seconds: 5),
     );
     animationController.repeat();
-    sleep(new Duration(seconds: 5));
-    print('Sleep over');
-    checkUser();
+  }
+
+  @override
+  void dispose() {
+    animationController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return new FutureBuilder<FirebaseUser>(
+      future: Future<FirebaseUser>.delayed(
+          Duration(seconds: 5), () => FirebaseAuth.instance.currentUser()),
+      builder: (context, AsyncSnapshot<FirebaseUser> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          snapshot.hasData
+              ? SchedulerBinding.instance.addPostFrameCallback((_) {
+                  Navigator.pushReplacementNamed(
+                      context, AccueilPage.routeName);
+                })
+              : SchedulerBinding.instance.addPostFrameCallback((_) {
+                  Navigator.pushReplacementNamed(context, LoginPage.routeName);
+                });
+          return Container();
+        } else {
+          return loadingScreen();
+        }
+      },
+    );
+  }
+
+  Widget loadingScreen() {
+    return new Scaffold(
       backgroundColor: Colors.grey[800],
-      body: Center(
-        child: Container(
+      body: new Center(
+        child: new Container(
           child: new AnimatedBuilder(
             animation: animationController,
             child: new Container(
@@ -53,14 +76,5 @@ class _SplashPage extends State<SplashPage>
         ),
       ),
     );
-  }
-
-  void checkUser() async {
-    FirebaseAuth.instance.currentUser().then((currentUser) => {
-          if (currentUser == null)
-            {Navigator.pushNamed(context, LoginPage.routeName)}
-          else
-            {Navigator.pushNamed(context, AccueilPage.routeName)}
-        });
   }
 }
