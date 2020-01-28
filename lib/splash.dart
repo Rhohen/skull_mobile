@@ -34,8 +34,7 @@ class _SplashPage extends State<SplashPage>
   @override
   Widget build(BuildContext context) {
     return new FutureBuilder<FirebaseUser>(
-      future: Future<FirebaseUser>.delayed(
-          Duration(seconds: 5), () => FirebaseAuth.instance.currentUser()),
+      future: FirebaseAuth.instance.currentUser(),
       builder: (context, AsyncSnapshot<FirebaseUser> snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           snapshot.hasData
