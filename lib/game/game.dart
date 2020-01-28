@@ -142,13 +142,11 @@ class GamePageState extends State<GamePage> {
               nbCarteJouer++;
               cardsOnTable[gameMessage.currentPlayer]--;
               players[gameMessage.currentPlayer].isTurn = false;
-              showFlushMessage(
-                  "${players[gameMessage.currentPlayer].name} has played");
 
               if (body != null &&
                   currentUser.key != gameMessage.currentPlayer) {
                 LOGGER.log(
-                    "Player ${gameMessage.currentPlayer} played a ${gameMessage.message}");
+                    "Le joueur ${gameMessage.currentPlayer} played a ${gameMessage.message}");
               } else {
                 LOGGER.log('Message sent successfully');
               }
@@ -167,10 +165,10 @@ class GamePageState extends State<GamePage> {
                   players[gameMessage.currentPlayer].isTurn = false;
                 }
                 if (gameMessage.nextPlayer == currentUser.key) {
-                  showFlushMessage("It's your turn");
+                  showFlushMessage("C'est votre tour");
                 } else {
                   showFlushMessage(
-                      "It's ${players[gameMessage.currentPlayer].name}'s turn");
+                      "C'est le tour de ${players[gameMessage.currentPlayer].name}");
                 }
                 LOGGER.log("Next player is " + gameMessage.nextPlayer);
                 players[gameMessage.nextPlayer].isTurn = true;
@@ -180,14 +178,14 @@ class GamePageState extends State<GamePage> {
               setState(() {});
               break;
             case 'CHALLENGE_TIME':
-              showFlushMessage("Challenge time !");
+              showFlushMessage("C'est l'heure du défi");
 
               challengeOccurred = true;
+              /*
+              // ==== Cette partie là est temporaire, il faudra coder l'interface de challenge === //
 
               // Actuellement le message reçu correspond à la key de la personne ayant perdu le challenge
               List<String> cardsList = players[gameMessage.message].cards;
-
-              // ==== Cette partie là est temporaire, il faudra coder l'interface de challenge === //
 
               if (cardsList.length > 0) {
                 int cardIndex =
@@ -198,24 +196,23 @@ class GamePageState extends State<GamePage> {
                 players[gameMessage.message].cards.removeAt(cardIndex);
               }
 
-              // ================================================================================= //
 
               if (currentUser.isOwner == 'true' && cardsList.length > 0) {
                 _sendNextTurn(players.values.elementAt(indexTurn).key);
               }
-
               if (currentUser.key == gameMessage.message &&
                   cardsList.length <= 0) {
                 _sendEliminatedNotification();
-              }
+              }*/
+              // ================================================================================= //
+
               setState(() {});
               break;
             case 'PLAYER_IS_ELIMINATED':
               indexTurn =
                   (((indexTurn - 1) % players.length) + players.length) %
                       players.length; // only useful for the game owner
-              showFlushMessage(
-                  "${players[gameMessage.message].name} has been eliminated");
+              showFlushMessage("${players[gameMessage.message].name} a perdu");
 
               players.remove(gameMessage.message);
 
@@ -238,16 +235,16 @@ class GamePageState extends State<GamePage> {
                   context: context,
                   animType: AnimType.TOPSLIDE,
                   tittle: (players[currentUser.key] != null)
-                      ? 'You are the winner !'
-                      : 'You just lost THE GAME !',
+                      ? 'Vous avez gagné !'
+                      : 'Tu as PERDU !',
                   desc: (players[currentUser.key] != null)
-                      ? 'So pleased to see you accomplishing great things.'
-                      : 'Maybe the truth is, there\'s a little bit of loser in all of us... ',
+                      ? 'Je suis ravi de vous voir accomplir de grandes choses.'
+                      : 'En vérité il y a peut être un peu de perdant en chacun de nous...',
                   btnOk: FlatButton(
                     shape: RoundedRectangleBorder(
                         borderRadius: new BorderRadius.circular(18.0),
                         side: BorderSide(color: Colors.grey)),
-                    child: Text('Leave game'),
+                    child: Text('Quitter la partie'),
                     onPressed: () {
                       Navigator.popUntil(
                           context, ModalRoute.withName(JouerPage.routeName));
@@ -261,6 +258,10 @@ class GamePageState extends State<GamePage> {
                   _sendNextTurn("");
                 }
               }
+              break;
+            case 'PLAYER_HAS_BET':
+              LOGGER.log(
+                  "Received : ${gameMessage.message} from ${gameMessage.currentPlayer}");
               break;
             default:
               LOGGER.log('onMessage undefined: $message ');
@@ -319,10 +320,10 @@ class GamePageState extends State<GamePage> {
         size: 28.0,
         color: Colors.blue[300],
       ),
-      title: "Game action !",
+      title: "Action !",
       leftBarIndicatorColor: Colors.blue[300],
       message: "$message",
-      duration: Duration(seconds: 7),
+      duration: Duration(seconds: 3),
       isDismissible: true,
       dismissDirection: FlushbarDismissDirection.HORIZONTAL,
     ).show(context);
@@ -362,20 +363,7 @@ class GamePageState extends State<GamePage> {
   Player getNextPlayer() {
     indexTurn = (indexTurn + 1) % players.length;
     Player nextPlayer = players.values.elementAt(indexTurn);
-    LOGGER.log("Next player = ${nextPlayer.key}");
     return nextPlayer;
-  }
-
-  Player getPreviousPlayer() {
-    int playersSize = players.length;
-    int previousPlayerIndex = players.keys.toList().indexOf(currentUser.key);
-    previousPlayerIndex =
-        ((((previousPlayerIndex - 1) % playersSize) + playersSize) %
-            playersSize);
-    Player previousPlayer = players.values.elementAt(previousPlayerIndex);
-    LOGGER.log("Previous player = ${previousPlayer.key}");
-
-    return previousPlayer;
   }
 
   void _sendNextTurn(String currentPlayerKey) {
@@ -387,6 +375,24 @@ class GamePageState extends State<GamePage> {
         "to": v.fcmKey,
         "notification": {
           "title": "NEXT_TURN",
+          "body": gameMessage.toJson(),
+          "click_action": "FLUTTER_NOTIFICATION_CLICK"
+        },
+        "priority": 10
+      };
+      client.post(googleFcmUrl, body: jsonEncode(jsonMap), headers: headersMap);
+    });
+    setState(() {});
+  }
+
+  void _sendHasBetNotification(String value) {
+    GameMessage gameMessage = new GameMessage(value, currentUser.key, "");
+
+    players.forEach((k, v) {
+      Map<String, Object> jsonMap = {
+        "to": v.fcmKey,
+        "notification": {
+          "title": "PLAYER_HAS_BET",
           "body": gameMessage.toJson(),
           "click_action": "FLUTTER_NOTIFICATION_CLICK"
         },
@@ -496,9 +502,9 @@ class GamePageState extends State<GamePage> {
   Future<void> openPopup() {
     return showDialog(
       context: context,
-      child: DefiDialog(nbCarteJouer),
+      child: DefiDialog(nbCarteJouer, _sendHasBetNotification),
     );
-  } 
+  }
 
   Future<void> _sendEliminatedNotification() async {
     await lock.synchronized(() async {
@@ -661,7 +667,8 @@ class GamePageState extends State<GamePage> {
                       buttonColor: Colors.blueAccent,
                       textTheme: ButtonTextTheme.primary,
                       child: RaisedButton(
-                        onPressed: (allPlayedOnce(cardsOnTable, players) &&
+                        onPressed: (players[currentUser.key].isTurn &&
+                                allPlayedOnce(cardsOnTable, players) &&
                                 !challengeOccurred)
                             ? _sendChallengeNotification
                             : null,
@@ -723,7 +730,7 @@ class GamePageState extends State<GamePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     SpinKitPouringHourglass(color: Colors.grey[800]),
-                    Text("The game is loading.."),
+                    Text("La partie se charge.."),
                   ],
                 ),
               )),

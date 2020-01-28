@@ -70,8 +70,7 @@ class UserCard extends StatelessWidget {
       )
     ];
 
-    if (currentUser.isOwner == 'true' ||
-        currentUser.name.toLowerCase() == 'admin') {
+    if (currentUser.isOwner == 'true') {
       actions.add(new InkWell(
         onTap: _removeUser,
         child: new Container(

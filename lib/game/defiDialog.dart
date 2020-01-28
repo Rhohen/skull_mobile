@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
 class DefiDialog extends StatelessWidget {
-
   int nbRosesMax;
 
   TextEditingController _inputNbRose = TextEditingController(text: "1");
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  DefiDialog(this.nbRosesMax);
+  var sendHasBetNotification;
+
+  DefiDialog(this.nbRosesMax, this.sendHasBetNotification);
 
   @override
   Widget build(BuildContext context) {
@@ -71,20 +72,20 @@ class DefiDialog extends StatelessWidget {
     if (int.parse(value) > nbRosesMax) {
       return "Il n'y a pas autant de cartes sur la table";
     } else {
-      return null;
+      return sendHasBetNotification(value);
     }
   }
 
   void minus() {
-      int value = int.parse(_inputNbRose.text);
-      value = (value == 1 ? nbRosesMax : value-1);
-      _inputNbRose.text = value.toString();
+    int value = int.parse(_inputNbRose.text);
+    value = (value == 1 ? nbRosesMax : value - 1);
+    _inputNbRose.text = value.toString();
   }
 
   void plus() {
-      int value = int.parse(_inputNbRose.text);
-      value = (value%nbRosesMax)+1;
-      _inputNbRose.text = value.toString();
+    int value = int.parse(_inputNbRose.text);
+    value = (value % nbRosesMax) + 1;
+    _inputNbRose.text = value.toString();
   }
 
   void _submit(BuildContext context) {
