@@ -6,6 +6,7 @@ class PlayerWidget extends StatelessWidget {
   final double left;
   final double maxWidthContainer;
   final bool isPlayerTurn;
+  final bool isChallengeMode;
   final double iconSize;
   final bool hasScored;
   final String profileImg;
@@ -20,6 +21,7 @@ class PlayerWidget extends StatelessWidget {
       this.left,
       this.maxWidthContainer,
       this.isPlayerTurn,
+      this.isChallengeMode,
       this.iconSize,
       this.hasScored,
       this.profileImg,

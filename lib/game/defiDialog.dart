@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class DefiDialog extends StatelessWidget {
-
   int nbRosesMax;
 
   TextEditingController _inputNbRose = TextEditingController(text: "1");
@@ -76,15 +75,15 @@ class DefiDialog extends StatelessWidget {
   }
 
   void minus() {
-      int value = int.parse(_inputNbRose.text);
-      value = (value == 1 ? nbRosesMax : value-1);
-      _inputNbRose.text = value.toString();
+    int value = int.parse(_inputNbRose.text);
+    value = (value == 1 ? nbRosesMax : value - 1);
+    _inputNbRose.text = value.toString();
   }
 
   void plus() {
-      int value = int.parse(_inputNbRose.text);
-      value = (value%nbRosesMax)+1;
-      _inputNbRose.text = value.toString();
+    int value = int.parse(_inputNbRose.text);
+    value = (value % nbRosesMax) + 1;
+    _inputNbRose.text = value.toString();
   }
 
   void _submit(BuildContext context) {

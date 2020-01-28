@@ -498,7 +498,7 @@ class GamePageState extends State<GamePage> {
       context: context,
       child: DefiDialog(nbCarteJouer),
     );
-  } 
+  }
 
   Future<void> _sendEliminatedNotification() async {
     await lock.synchronized(() async {
@@ -592,6 +592,7 @@ class GamePageState extends State<GamePage> {
             left: (v.y - centeredHorizontalValue),
             maxWidthContainer: widthContainerSize,
             isPlayerTurn: player.isTurn,
+            isChallengeMode: challengeOccurred,
             iconSize: imgSize,
             hasScored: player.hasScored,
             profileImg: player.profileImg,
@@ -644,17 +645,24 @@ class GamePageState extends State<GamePage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     ButtonTheme(
-                      height: buttonSize,
-                      buttonColor: Colors.green,
-                      textTheme: ButtonTextTheme.primary,
-                      child: RaisedButton(
-                        onPressed:
-                            (isNotificationAllowed && myCardsOnTable.length > 0)
-                                ? _sendHasPlayedNotification
-                                : null,
-                        child: Text("Poser une carte"),
-                      ),
-                    ),
+                        height: buttonSize,
+                        buttonColor: Colors.green,
+                        textTheme: ButtonTextTheme.primary,
+                        child: (!challengeOccurred)
+                            ? RaisedButton(
+                                onPressed: (isNotificationAllowed &&
+                                        myCardsOnTable.length > 0)
+                                    ? _sendHasPlayedNotification
+                                    : null,
+                                child: Text("Poser une carte"),
+                              )
+                            : RaisedButton(
+                                onPressed: (isNotificationAllowed &&
+                                        myCardsOnTable.length > 0)
+                                    ? _sendHasPlayedNotification
+                                    : null,
+                                child: Text("Passer"),
+                              )),
                     SizedBox(width: 20),
                     ButtonTheme(
                       height: buttonSize,

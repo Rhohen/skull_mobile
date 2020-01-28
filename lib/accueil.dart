@@ -19,8 +19,6 @@ class AccueilPage extends StatefulWidget {
 class _AcceuilPage extends State<AccueilPage> {
   String _pseudo;
 
-  
-
   @override
   void initState() {
     _pseudo = "";
