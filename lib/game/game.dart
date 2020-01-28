@@ -157,7 +157,6 @@ class GamePageState extends State<GamePage> {
               break;
             case 'NEXT_TURN':
               if (body != null) {
-                nbCarteJouer = 0;
                 gameCanStart = true;
                 if (gameMessage.currentPlayer.isNotEmpty) {
                   LOGGER
@@ -403,6 +402,11 @@ class GamePageState extends State<GamePage> {
     setState(() {});
   }
 
+  void _sendFlipNotification(String value) {
+    //Le player a choisi la carte a retourner et envoi une notification + incorper logique si la xarte est skull ou fleur
+    setState(() {});
+  }
+
   bool allUsersReady() {
     for (Player player in players.values) {
       if (player.isReady != 'true') return false;
@@ -606,6 +610,8 @@ class GamePageState extends State<GamePage> {
             textSize: textSize,
             textScaleFactor: textScaleFactor,
             cardsSize: cardsOnTable[player.key],
+            sendCardFlipChoice: _sendFlipNotification,
+            isCurrentUserTurn: players[currentUser.key].isTurn,
           ),
         );
       }

@@ -14,6 +14,9 @@ class PlayerWidget extends StatelessWidget {
   final double textSize;
   final double textScaleFactor;
   final int cardsSize;
+  final bool isCurrentUserTurn;
+
+  var sendCardFlipChoice;
 
   PlayerWidget(
       {Key key,
@@ -28,7 +31,9 @@ class PlayerWidget extends StatelessWidget {
       this.playerName,
       this.textSize,
       this.textScaleFactor,
-      this.cardsSize})
+      this.cardsSize,
+      this.sendCardFlipChoice,
+      this.isCurrentUserTurn})
       : super(key: key);
 
   @override
@@ -76,27 +81,31 @@ class PlayerWidget extends StatelessWidget {
               ),
             ),
             Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: new Border.all(
-                  color: Colors.grey,
-                ),
-                borderRadius: BorderRadius.all(
-                  Radius.circular(
-                    2.0,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: new Border.all(
+                    color: Colors.grey,
+                  ),
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(
+                      2.0,
+                    ),
                   ),
                 ),
-              ),
-              child: Text(
-                playerName,
-                textScaleFactor: textScaleFactor,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  //backgroundColor: Colors.blue,
-                  fontSize: textSize,
-                ),
-              ),
-            ),
+                child: FlatButton(
+                  child: new Text(
+                    playerName,
+                    textScaleFactor: textScaleFactor,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      //backgroundColor: Colors.blue,
+                      fontSize: textSize,
+                    ),
+                  ),
+                  // Ajouter verification qu'on ne clique pas sur soi-même
+                  onPressed:
+                      (isChallengeMode && isCurrentUserTurn) ? null : null,
+                )),
           ],
         ),
       ),
