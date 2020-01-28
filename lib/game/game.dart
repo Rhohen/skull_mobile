@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:faker/faker.dart';
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:http/http.dart' as http;
@@ -141,6 +142,8 @@ class GamePageState extends State<GamePage> {
               nbCarteJouer++;
               cardsOnTable[gameMessage.currentPlayer]--;
               players[gameMessage.currentPlayer].isTurn = false;
+              showFlushMessage(
+                  "${players[gameMessage.currentPlayer].name} has played");
 
               if (body != null &&
                   currentUser.key != gameMessage.currentPlayer) {
@@ -163,6 +166,12 @@ class GamePageState extends State<GamePage> {
                       .log("Previous player was " + gameMessage.currentPlayer);
                   players[gameMessage.currentPlayer].isTurn = false;
                 }
+                if (gameMessage.nextPlayer == currentUser.key) {
+                  showFlushMessage("It's your turn");
+                } else {
+                  showFlushMessage(
+                      "It's ${players[gameMessage.currentPlayer].name}'s turn");
+                }
                 LOGGER.log("Next player is " + gameMessage.nextPlayer);
                 players[gameMessage.nextPlayer].isTurn = true;
                 isNotificationAllowed =
@@ -171,6 +180,8 @@ class GamePageState extends State<GamePage> {
               setState(() {});
               break;
             case 'CHALLENGE_TIME':
+              showFlushMessage("Challenge time !");
+
               challengeOccurred = true;
 
               // Actuellement le message reçu correspond à la key de la personne ayant perdu le challenge
@@ -203,6 +214,9 @@ class GamePageState extends State<GamePage> {
               indexTurn =
                   (((indexTurn - 1) % players.length) + players.length) %
                       players.length; // only useful for the game owner
+              showFlushMessage(
+                  "${players[gameMessage.message].name} has been eliminated");
+
               players.remove(gameMessage.message);
 
               setState(() {});
@@ -295,6 +309,23 @@ class GamePageState extends State<GamePage> {
         });
       });
     });
+  }
+
+  void showFlushMessage(String message) {
+    Flushbar(
+      flushbarPosition: FlushbarPosition.TOP,
+      icon: Icon(
+        Icons.info_outline,
+        size: 28.0,
+        color: Colors.blue[300],
+      ),
+      title: "Game action !",
+      leftBarIndicatorColor: Colors.blue[300],
+      message: "$message",
+      duration: Duration(seconds: 7),
+      isDismissible: true,
+      dismissDirection: FlushbarDismissDirection.HORIZONTAL,
+    ).show(context);
   }
 
   Future<void> _onEntryChangedUser(Event event) async {
