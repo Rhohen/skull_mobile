@@ -7,7 +7,9 @@ class DefiDialog extends StatelessWidget {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  DefiDialog(this.nbRosesMax);
+  var sendHasBetNotification;
+
+  DefiDialog(this.nbRosesMax, this.sendHasBetNotification);
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +72,7 @@ class DefiDialog extends StatelessWidget {
     if (int.parse(value) > nbRosesMax) {
       return "Il n'y a pas autant de cartes sur la table";
     } else {
-      return null;
+      return sendHasBetNotification(value);
     }
   }
 
