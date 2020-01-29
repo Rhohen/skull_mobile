@@ -17,6 +17,7 @@ import 'package:skull_mobile/game/gameMessage.dart';
 import 'package:skull_mobile/game/playerModel.dart';
 import 'package:skull_mobile/game/playerWidget.dart';
 import 'package:skull_mobile/lobby/userModel.dart';
+import 'package:skull_mobile/settings/localUser.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:vector_math/vector_math.dart' hide Colors;
 import 'dart:developer' as LOGGER;
@@ -245,6 +246,9 @@ class GamePageState extends State<GamePage> {
                         side: BorderSide(color: Colors.grey)),
                     child: Text('Quitter la partie'),
                     onPressed: () {
+                      (players[currentUser.key] != null)
+                          ? LocalUser.setScore()
+                          : null;
                       Navigator.popUntil(
                           context, ModalRoute.withName(JouerPage.routeName));
                     },

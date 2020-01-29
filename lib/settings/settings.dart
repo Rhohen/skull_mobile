@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:skull_mobile/settings/localUser.dart';
+import 'package:skull_mobile/settings/profil/profil.dart';
 
 import 'languageSelector.dart';
 
@@ -11,8 +13,14 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPage extends State<SettingsPage> {
+  String _avatar;
+
   @override
   void initState() {
+    _avatar = "assets/skull.png";
+    LocalUser.getAvatar().then((user) => setState(() {
+          _avatar = user;
+        }));
     super.initState();
   }
 
@@ -51,7 +59,7 @@ class _SettingsPage extends State<SettingsPage> {
         child: CircleAvatar(
           backgroundColor: Colors.transparent,
           radius: 48.0,
-          child: Image.asset('assets/skull.png'),
+          child: Image.asset(_avatar),
         ),
       ),
     );
@@ -70,9 +78,11 @@ class _SettingsPage extends State<SettingsPage> {
                 color: Colors.blue,
                 child: new Text('Profil',
                     style: new TextStyle(fontSize: 20.0, color: Colors.white)),
-                onPressed: null,
+                onPressed: () {
+                  Navigator.pushNamed(context, ProfilPage.routeName);
+                },
               ),
-              LanguageSelector(),
+              new LanguageSelector(),
               new RaisedButton(
                 elevation: 5.0,
                 shape: new RoundedRectangleBorder(
@@ -80,7 +90,9 @@ class _SettingsPage extends State<SettingsPage> {
                 color: Colors.blue,
                 child: new Text('Logout',
                     style: new TextStyle(fontSize: 20.0, color: Colors.white)),
-                onPressed: null,
+                onPressed: () {
+                  LocalUser.logout(context);
+                },
               )
             ],
           ),

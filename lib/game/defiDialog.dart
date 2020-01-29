@@ -32,7 +32,7 @@ class DefiDialog extends StatelessWidget {
                 width: 25,
                 child: TextFormField(
                   controller: _inputNbRose,
-                  keyboardType: TextInputType.text,
+                  keyboardType: TextInputType.number,
                   validator: _validateNbRoses,
                   onSaved: (String value) {
                     _inputNbRose.text = value;

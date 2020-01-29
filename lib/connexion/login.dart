@@ -57,6 +57,8 @@ class _LoginPage extends State<LoginPage> {
                       .set({
                         "mail": _email,
                         "pseudo": _pseudo,
+                        "avatar": 'assets/pic-5.png',
+                        "score": 0
                       })
                       .then((onValue) =>
                           {Navigator.pushNamed(context, AccueilPage.routeName)})

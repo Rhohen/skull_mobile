@@ -3,6 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:skull_mobile/connexion/login.dart';
+import 'package:skull_mobile/settings/localUser.dart';
 import 'package:skull_mobile/settings/settings.dart';
 import 'jouer.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,7 +25,9 @@ class _AcceuilPage extends State<AccueilPage> {
   @override
   void initState() {
     _pseudo = "";
-    this.getCurrentUserInfo();
+    LocalUser.getPseudo().then((user) => setState(() {
+          _pseudo = user;
+        }));
     super.initState();
   }
 
@@ -96,28 +99,6 @@ class _AcceuilPage extends State<AccueilPage> {
         ],
       ),
     );
-  }
-
-  void getCurrentUserInfo() {
-    FirebaseAuth.instance.currentUser().then((user) => {
-          FirebaseDatabase.instance
-              .reference()
-              .child('users')
-              .child(user.uid)
-              .child('pseudo')
-              .once()
-              .then((pseudo) => {
-                    setState(() {
-                      _pseudo = pseudo.value;
-                    })
-                  })
-        });
-  }
-
-  void logout() {
-    FirebaseAuth.instance
-        .signOut()
-        .then((onValue) => {Navigator.pushNamed(context, LoginPage.routeName)});
   }
 
   // ignore: unused_element
