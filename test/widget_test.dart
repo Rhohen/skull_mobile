@@ -6,6 +6,7 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n_delegate.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:skull_mobile/main.dart';
@@ -13,7 +14,14 @@ import 'package:skull_mobile/main.dart';
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp());
+    final FlutterI18nDelegate flutterI18nDelegate = FlutterI18nDelegate(
+      useCountryCode: false,
+      fallbackFile: 'en',
+      path: 'assets/i18n',
+      forcedLocale: new Locale('fr'));
+  WidgetsFlutterBinding.ensureInitialized();
+  await flutterI18nDelegate.load(null);
+    await tester.pumpWidget(MyApp(flutterI18nDelegate));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

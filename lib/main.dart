@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:flutter_i18n/flutter_i18n_delegate.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:skull_mobile/connexion/login.dart';
 import 'package:skull_mobile/game/game.dart';
@@ -6,15 +8,29 @@ import 'package:skull_mobile/jouer.dart';
 import 'package:skull_mobile/lobby/lobby.dart';
 import 'package:skull_mobile/lobby/lobbyArguments.dart';
 import 'package:skull_mobile/rejoindre/rejoindre.dart';
+import 'package:skull_mobile/settings/settings.dart';
 import 'package:skull_mobile/splash.dart';
 import 'accueil.dart';
 import 'creerLobby/creer.dart';
 import 'game/gameArguments.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
-void main() => runApp(MyApp());
+Future main() async {
+  final FlutterI18nDelegate flutterI18nDelegate = FlutterI18nDelegate(
+      useCountryCode: false,
+      fallbackFile: 'en',
+      path: 'assets/i18n',
+      forcedLocale: new Locale('fr'));
+  WidgetsFlutterBinding.ensureInitialized();
+  await flutterI18nDelegate.load(null);
+  runApp(new MyApp(flutterI18nDelegate));
+}
 
 class MyApp extends StatelessWidget {
   static const routeName = '/root';
+  final FlutterI18nDelegate flutterI18nDelegate;
+
+  MyApp(this.flutterI18nDelegate);
 
   // This widget is the root of your application.
   @override
@@ -75,14 +91,26 @@ class MyApp extends StatelessWidget {
               settings: settings,
             );
             break;
+          case SettingsPage.routeName:
+            return PageTransition(
+              child: SettingsPage(),
+              type: PageTransitionType.fade,
+              settings: settings,
+            );
+            break;
           default:
             return null;
         }
       },
       title: 'Skull Mobile', // App name visible on task manager
+      localizationsDelegates: [
+        flutterI18nDelegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Skull Mobile', style: TextStyle(fontSize: 20)),
+          title: new Text('Skull mobile', style: TextStyle(fontSize: 20)),
           backgroundColor: Colors.grey[800],
         ),
         body: SplashPage(),

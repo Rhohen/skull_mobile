@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:skull_mobile/connexion/login.dart';
+import 'package:skull_mobile/settings/settings.dart';
 import 'jouer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -33,11 +35,12 @@ class _AcceuilPage extends State<AccueilPage> {
         title: new Text(_pseudo),
         actions: <Widget>[
           FlatButton(
-            child: Text("Log out"),
+            shape: new CircleBorder(),
             onPressed: () {
-              logout();
+              Navigator.pushNamed(context, SettingsPage.routeName);
             },
-          )
+            child: new Icon(Icons.settings),
+          ),
         ],
       ),
       body: Stack(
@@ -76,7 +79,7 @@ class _AcceuilPage extends State<AccueilPage> {
             onPressed: () {
               Navigator.pushNamed(context, JouerPage.routeName);
             },
-            child: Text('Jouer',
+            child: Text(FlutterI18n.translate(context, "jouer"),
                 style: new TextStyle(fontSize: 20.0, color: Colors.white)),
           ),
           RaisedButton(
