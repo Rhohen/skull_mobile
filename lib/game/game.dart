@@ -210,12 +210,13 @@ class GamePageState extends State<GamePage> {
                 players[gameMessage.currentPlayer].isTurn = false;
               }
               if (gameMessage.nextPlayer == currentUser.key) {
-                showFlushMessage(
-                    "C'est à votre tour de jouer", Colors.blue[300]);
+                showFlushMessage("C'est à votre tour de jouer",
+                    Colors.blue[300], Duration(seconds: 5));
               } else {
                 showFlushMessage(
                     "C'est le tour de ${players[gameMessage.currentPlayer].name}",
-                    Colors.blue[300]);
+                    Colors.blue[300],
+                    Duration(seconds: 5));
               }
               LOGGER.log(
                   "Next player is ${players[gameMessage.nextPlayer].name}");
@@ -226,7 +227,7 @@ class GamePageState extends State<GamePage> {
               indexTurn = (indexTurn == 0 ? players.length - 1 : indexTurn - 1);
 
               showFlushMessage("${players[gameMessage.message].name} a perdu",
-                  Colors.red[500]);
+                  Colors.red[500], null);
 
               players.remove(gameMessage.message);
 
@@ -234,7 +235,8 @@ class GamePageState extends State<GamePage> {
               if (players.length <= 1) {
                 showFlushMessage(
                     "${players[players.keys.first].name} a GAGNÉ !",
-                    Colors.orange[300]);
+                    Colors.orange[300],
+                    null);
                 showEndGamePopup(players.keys.first);
               } else {
                 if (currentUser.isOwner == 'true') {
@@ -278,18 +280,21 @@ class GamePageState extends State<GamePage> {
                 if (gameMessage.nextPlayer == currentUser.key) {
                   showFlushMessage(
                       "${players[gameMessage.currentPlayer].name} a parié ${gameMessage.message}, à votre tour !",
-                      Colors.blue[300]);
+                      Colors.blue[300],
+                      null);
                 } else {
                   showFlushMessage(
                       "${players[gameMessage.currentPlayer].name} a parié ${gameMessage.message}, à ${players[gameMessage.nextPlayer].name} de parier !",
-                      Colors.blue[300]);
+                      Colors.blue[300],
+                      null);
                 }
               } else {
                 LOGGER.log(
                     "Previous player was ${players[gameMessage.currentPlayer].name} and skipped, next player is ${players[gameMessage.nextPlayer].name}");
                 showFlushMessage(
                     "${players[gameMessage.currentPlayer].name} passe son tour, à ${players[gameMessage.nextPlayer].name} de parier !",
-                    Colors.blue[300]);
+                    Colors.blue[300],
+                    Duration(seconds: 5));
               }
               setState(() {});
               break;
@@ -326,12 +331,14 @@ class GamePageState extends State<GamePage> {
               if (lastGamblerKey == currentUser.key) {
                 showFlushMessage(
                     "Vous avez $lastGamblerValue roses à trouver !",
-                    Colors.blue[300]);
+                    Colors.blue[300],
+                    Duration(seconds: 5));
                 flipOwnCardsFirst();
               } else {
                 showFlushMessage(
                     "${players[lastGamblerKey].name} a $lastGamblerValue roses à trouver !",
-                    Colors.blue[300]);
+                    Colors.blue[300],
+                    Duration(seconds: 5));
               }
 
               setState(() {});
@@ -340,12 +347,14 @@ class GamePageState extends State<GamePage> {
               if (flippedCards.length < lastGamblerValue) {
                 flippedCards.add(gameMessage.message);
 
-                cardsOnTable[gameMessage.currentPlayer].pop();
-
+                if (currentUser.key != gameMessage.nextPlayer) {
+                  cardsOnTable[gameMessage.currentPlayer].pop();
+                }
                 if (gameMessage.message == 'skull') {
                   showFlushMessage(
                       "Perdu ! ${players[gameMessage.nextPlayer].name} perd une carte !",
-                      Colors.red[500]);
+                      Colors.red[500],
+                      Duration(seconds: 5));
 
                   List<String> cardsList =
                       players[gameMessage.nextPlayer].cards;
@@ -368,12 +377,14 @@ class GamePageState extends State<GamePage> {
                   if (players[gameMessage.nextPlayer].hasScored) {
                     showFlushMessage(
                         "${players[gameMessage.nextPlayer].name} a GAGNÉ !",
-                        Colors.orange[300]);
+                        Colors.orange[300],
+                        Duration(seconds: 5));
                     showEndGamePopup(gameMessage.nextPlayer);
                   } else {
                     showFlushMessage(
                         "Un point de marqué pour ${players[gameMessage.nextPlayer].name} !",
-                        Colors.orange[300]);
+                        Colors.orange[300],
+                        Duration(seconds: 5));
                     players[gameMessage.nextPlayer].hasScored = true;
 
                     if (currentUser.isOwner == 'true') {
@@ -473,6 +484,7 @@ class GamePageState extends State<GamePage> {
   }
 
   void showEndGamePopup(String winnerKey) {
+    if (currentUser.key == winnerKey) LocalUser.setScore();
     AwesomeDialog(
       customHeader: Container(
         width: 100.0,
@@ -506,7 +518,6 @@ class GamePageState extends State<GamePage> {
           client.close();
           stopListening();
           lobbyRef.child(currentUser.key).remove();
-          if (currentUser.key == winnerKey) LocalUser.setScore();
           Navigator.popUntil(context, ModalRoute.withName(JouerPage.routeName));
         },
       ),
@@ -520,7 +531,9 @@ class GamePageState extends State<GamePage> {
     ListQueue tempoStack = cardsOnTable[currentUser.key].getList();
 
     for (int i = 0; i < nbIter; i++) {
-      _sendFlipNotification(currentUser.key);
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _sendFlipNotification(currentUser.key);
+      });
       String card = tempoStack.last;
       tempoStack.removeLast();
       if (card == 'skull') {
@@ -545,7 +558,8 @@ class GamePageState extends State<GamePage> {
     return nbPlayersOnTable >= 2;
   }
 
-  Future<void> showFlushMessage(String message, Color color) async {
+  Future<void> showFlushMessage(
+      String message, Color color, Duration duration) async {
     await lock.synchronized(() async {
       flushbar.dismiss().then((onValue) {
         flushbar = Flushbar(
@@ -558,7 +572,7 @@ class GamePageState extends State<GamePage> {
           title: "Action !",
           leftBarIndicatorColor: color,
           message: "$message",
-          duration: Duration(seconds: 3),
+          duration: duration,
           isDismissible: true,
           dismissDirection: FlushbarDismissDirection.HORIZONTAL,
         );
@@ -722,7 +736,7 @@ class GamePageState extends State<GamePage> {
     await lock.synchronized(() async {
       LOGGER.log("I selected user ${players[userSelected].name}");
       if (cardsOnTable[userSelected].isNotEmpty) {
-        String cardFlipped = cardsOnTable[userSelected].top();
+        String cardFlipped = cardsOnTable[userSelected].pop();
 
         if (cardFlipped == 'skull') {
           setState(() {
@@ -753,11 +767,13 @@ class GamePageState extends State<GamePage> {
         if (userSelected == currentUser.key) {
           showFlushMessage(
               "Tu n'as plus de carte devant toi, essaye un autre joueur !",
-              Colors.blue[300]);
+              Colors.blue[300],
+              Duration(seconds: 3));
         } else {
           showFlushMessage(
               "${players[userSelected].name} n'a plus de cartes devant lui, essaye un autre joueur !",
-              Colors.blue[300]);
+              Colors.blue[300],
+              Duration(seconds: 3));
         }
       }
     });
