@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:skull_mobile/creerLobby/creer.dart';
 import 'package:skull_mobile/lobby/lobbyArguments.dart';
-import 'package:skull_mobile/lobby/userModel.dart';
 import 'package:skull_mobile/rejoindre/rejoindre.dart';
+import 'package:skull_mobile/settings/localUser.dart';
 import 'lobby/lobby.dart';
 
 class JouerPage extends StatelessWidget {
@@ -40,16 +40,19 @@ class JouerPage extends StatelessWidget {
                   borderRadius: new BorderRadius.circular(18.0),
                   side: BorderSide(color: Colors.blue)),
               onPressed: () {
-                LobbyArguments lobbyArgs = new LobbyArguments(
-                  "-Lx7KJcaKvlwpe2z2dEp",
-                  User.generate("admin"),
-                  context,
-                );
-                Navigator.pushNamed(
-                  context,
-                  Lobby.routeName,
-                  arguments: lobbyArgs,
-                );
+                LocalUser.getUser().then((userValue) {
+                  print(userValue);
+                  LobbyArguments lobbyArgs = new LobbyArguments(
+                    "-Lx7KJcaKvlwpe2z2dEp",
+                    userValue,
+                    context,
+                  );
+                  Navigator.pushNamed(
+                    context,
+                    Lobby.routeName,
+                    arguments: lobbyArgs,
+                  );
+                });
               },
               child: Text('[DEBUG] Pas touche c\'est à nico',
                   style: TextStyle(fontSize: 20)),

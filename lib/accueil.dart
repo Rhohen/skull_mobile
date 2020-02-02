@@ -49,12 +49,20 @@ class _AcceuilPage extends State<AccueilPage> {
           )
         ],
       ),
-      body: Stack(
-        children: <Widget>[
-          accessButtons(context),
-        ],
+      body: WillPopScope(
+        onWillPop: _onBackPressed,
+        child: Stack(
+          children: <Widget>[
+            accessButtons(context),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<bool> _onBackPressed() {
+    LocalUser.logout(context);
+    return Future.value(false);
   }
 
   void choiceAction(String choice) {

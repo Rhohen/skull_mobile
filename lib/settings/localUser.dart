@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:skull_mobile/connexion/login.dart';
+import 'package:skull_mobile/lobby/userModel.dart';
 
 class LocalUser {
   static Future<FirebaseUser> getPlayer() {
@@ -71,9 +72,29 @@ class LocalUser {
         .update({'score': (onValue + 1)})));
   }
 
+  static Future getUser() async {
+    User user;
+    await getPlayer().then((onValue) => FirebaseDatabase.instance
+            .reference()
+            .child('users')
+            .child(onValue.uid)
+            .once()
+            .then((DataSnapshot snapshot) {
+          user = new User(
+              onValue.uid,
+              snapshot.value['pseudo'],
+              snapshot.value['avatar'],
+              snapshot.value['score'].toString(),
+              'false',
+              'false',
+              '0');
+        }));
+    return user;
+  }
+
   static logout(BuildContext context) {
-    FirebaseAuth.instance
-        .signOut()
-        .then((onValue) => {Navigator.pushNamed(context, LoginPage.routeName)});
+    FirebaseAuth.instance.signOut().then((onValue) => {
+          Navigator.popUntil(context, ModalRoute.withName(LoginPage.routeName))
+        });
   }
 }
