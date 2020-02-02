@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:skull_mobile/settings/localUser.dart';
 import 'package:skull_mobile/settings/profil/profil.dart';
 
@@ -14,13 +15,22 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPage extends State<SettingsPage> {
   String _avatar;
+  String _pseudo;
+  int _score;
+  bool _isDisplayMode;
 
   @override
   void initState() {
-    _avatar = "assets/skull.png";
-    LocalUser.getAvatar().then((user) => setState(() {
-          _avatar = user;
+    LocalUser.getAvatar().then((snapshot) => setState(() {
+          _avatar = snapshot;
         }));
+    LocalUser.getPseudo().then((snapshot) => setState(() {
+          _pseudo = snapshot;
+        }));
+    LocalUser.getScore().then((snapshot) => setState(() {
+          _score = snapshot;
+        }));
+    _isDisplayMode = true;
     super.initState();
   }
 
@@ -29,6 +39,14 @@ class _SettingsPage extends State<SettingsPage> {
     return new Scaffold(
       appBar: new AppBar(
         title: new Text(FlutterI18n.translate(context, "settings_title")),
+        actions: <Widget>[
+          (isLoadingData())
+              ? Container()
+              : IconButton(
+                  icon: Icon(Icons.edit),
+                  onPressed: toggleEditMode,
+                ),
+        ],
       ),
       body: Stack(
         children: <Widget>[
@@ -38,53 +56,155 @@ class _SettingsPage extends State<SettingsPage> {
     );
   }
 
+  void toggleEditMode() {
+    setState(() {
+      _isDisplayMode = !_isDisplayMode;
+    });
+  }
+
   Widget showButtons() {
-    return new Container(
+    return Container(
       padding: EdgeInsets.all(16.0),
-      child: new ListView(
-        shrinkWrap: true,
+      child: (isLoadingData())
+          ? showCircularProgress()
+          : ListView(
+              shrinkWrap: true,
+              children: <Widget>[
+                showLogo(),
+                showPseudo(),
+                showScore(),
+                showPrimaryButton(),
+                LanguageSelector(),
+              ],
+            ),
+    );
+  }
+
+  Widget showCircularProgress() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          showLogo(),
-          showPrimaryButton(),
+          SpinKitCircle(
+            color: Colors.grey[800],
+            size: 100,
+          ),
+          Text(
+            "Chargement du profil..",
+            style: TextStyle(fontSize: 20),
+          ),
         ],
       ),
     );
   }
 
+  bool isLoadingData() {
+    return _avatar == null || _pseudo == null || _score == null;
+  }
+
   Widget showLogo() {
-    return new Hero(
-      tag: 'hero',
+    double size = MediaQuery.of(context).size.height / 6;
+    return Center(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(_avatar),
+            fit: BoxFit.cover,
+          ),
+          borderRadius: BorderRadius.circular(80.0),
+          border: Border.all(
+            color: Colors.white,
+            width: 10.0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget showPseudo() {
+    return Padding(
+      padding: EdgeInsets.only(top: 15.0),
+      child: Center(
+        child: Text(
+          _pseudo,
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            color: Colors.black,
+            fontSize: 28.0,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget showScore() {
+    return Visibility(
+      visible: _isDisplayMode,
       child: Padding(
-        padding: EdgeInsets.fromLTRB(0.0, 25.0, 0.0, 0.0),
-        child: CircleAvatar(
-          backgroundColor: Colors.transparent,
-          radius: 48.0,
-          child: Image.asset(_avatar),
+        padding: EdgeInsets.only(top: 15.0),
+        child: Center(
+          child: Container(
+            height: 60.0,
+            margin: EdgeInsets.only(top: 8.0),
+            decoration: BoxDecoration(
+              color: Color(0xFFEFF4F7),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      _score.toString(),
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "Victoire${(_score == 1 ? '' : 's')}",
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        color: Colors.black,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w200,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
   Widget showPrimaryButton() {
-    return new Padding(
-        padding: EdgeInsets.fromLTRB(0.0, 45.0, 0.0, 0.0),
-        child: SizedBox(
-          child: new Column(
-            children: <Widget>[
-              new RaisedButton(
-                elevation: 5.0,
-                shape: new RoundedRectangleBorder(
-                    borderRadius: new BorderRadius.circular(30.0)),
-                color: Colors.blue,
-                child: new Text('Profil',
-                    style: new TextStyle(fontSize: 20.0, color: Colors.white)),
-                onPressed: () {
-                  Navigator.pushNamed(context, ProfilPage.routeName);
-                },
-              ),
-              new LanguageSelector()
-            ],
-          ),
-        ));
+    return Padding(
+      padding: EdgeInsets.only(top: 15.0),
+      child: SizedBox(
+        child: new Column(
+          children: <Widget>[
+            new RaisedButton(
+              elevation: 5.0,
+              shape: new RoundedRectangleBorder(
+                  borderRadius: new BorderRadius.circular(30.0)),
+              color: Colors.blue,
+              child: new Text('Profil',
+                  style: new TextStyle(fontSize: 20.0, color: Colors.white)),
+              onPressed: () {
+                Navigator.pushNamed(context, ProfilPage.routeName);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -66,7 +66,7 @@ class _AcceuilPage extends State<AccueilPage> {
   }
 
   void choiceAction(String choice) {
-    if (choice == MenuItems.Settings) {
+    if (choice == MenuItems.Profile) {
       Navigator.pushNamed(context, SettingsPage.routeName);
     } else if (choice == MenuItems.SignOut) {
       LocalUser.logout(context);

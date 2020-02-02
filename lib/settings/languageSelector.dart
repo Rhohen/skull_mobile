@@ -12,7 +12,10 @@ class _LanguageSelectorState extends State<LanguageSelector> {
   Locale curentLang;
   int _key;
 
-  List<Locale> availablesLagages = [Locale('en'), Locale('fr')];
+  List<Locale> availablesLagages = [
+    Locale('en'),
+    Locale('fr'),
+  ];
 
   @override
   void initState() {
@@ -56,7 +59,9 @@ class _LanguageSelectorState extends State<LanguageSelector> {
       title: new Row(
         children: [new Text(FlutterI18n.translate(context, "langues"))],
       ),
-      children: _languageItems(),
+      children: (curentLang != null)
+          ? _languageItems()
+          : <Widget>[CircularProgressIndicator()],
     );
   }
 
