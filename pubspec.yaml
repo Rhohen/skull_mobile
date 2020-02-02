@@ -45,6 +45,8 @@ dependencies:
   video_player: ^0.10.5+1
   flushbar: ^1.9.1
   flutter_i18n: ^0.8.3
+  dotted_border: ^1.0.4
+  screen_state: ^0.1.1
 
 dev_dependencies:
   flutter_test:
@@ -71,8 +73,6 @@ flutter:
   assets:
     - assets/
     - assets/i18n/
-  #  - images/a_dot_burr.jpeg
-  #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

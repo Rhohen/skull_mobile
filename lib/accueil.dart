@@ -1,8 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
-import 'package:skull_mobile/connexion/login.dart';
 import 'package:skull_mobile/settings/localUser.dart';
 import 'package:skull_mobile/settings/settings.dart';
 import 'jouer.dart';
@@ -55,7 +53,7 @@ class _AcceuilPage extends State<AccueilPage> {
   }
 
   Widget showLogo() {
-    return new Container(
+    return Container(
       child: Padding(
         padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 25.0),
         child: CircleAvatar(

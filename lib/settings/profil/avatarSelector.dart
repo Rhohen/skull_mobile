@@ -1,10 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_i18n/flutter_i18n.dart';
-import 'package:skull_mobile/settings/settings.dart';
-
 import '../localUser.dart';
 
+// ignore: must_be_immutable
 class AvatarSelector extends StatefulWidget {
   var sendAvatar;
 

@@ -4,6 +4,7 @@ import '../lobby/lobby.dart';
 import '../lobby/lobbyArguments.dart';
 import '../lobby/userModel.dart';
 
+// ignore: must_be_immutable
 class DialogForm extends StatelessWidget {
   String roomKey;
   String password;

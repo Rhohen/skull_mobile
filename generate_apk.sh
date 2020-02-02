@@ -7,7 +7,7 @@ then
   mkdir -p ${GEN_REPO_LOCATION};
 fi
 
-#flutter build apk --split-per-abi
+flutter build apk --split-per-abi
 
 if ls $PWD/build/app/outputs/apk/release/app-arm64-*-release.apk 1> /dev/null 2>&1;
 then

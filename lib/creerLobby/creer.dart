@@ -1,11 +1,7 @@
-import 'dart:math';
-
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:toast/toast.dart';
-
 import '../lobby/lobby.dart';
 import '../lobby/lobbyArguments.dart';
 import '../lobby/userModel.dart';
@@ -66,13 +62,13 @@ class _CreerPage extends State<CreerPage> {
                 child: Form(
                   key: _key,
                   autovalidate: _validate,
-                  child: FormUI(),
+                  child: formUI(),
                 ),
               ),
             )));
   }
 
-  Widget FormUI() {
+  Widget formUI() {
     double logoSize = MediaQuery.of(context).size.height * 0.3;
     const double vertical = 8.0;
     const double horizontal = 46.0;

@@ -121,7 +121,8 @@ class _Lobby extends State<Lobby> {
           currentUser.key == event.snapshot.key) {
         if (users.length == 0) {
           lobbyRef.remove().then((_) {
-            Navigator.pop(context);
+            Navigator.popUntil(
+                context, ModalRoute.withName(JouerPage.routeName));
           });
         } else if (currentUser.isOwner == 'true') {
           lobbyRef.once().then(
@@ -251,7 +252,8 @@ class _Lobby extends State<Lobby> {
 
                       // Minimum 2 players and everybody is ready
                       if (numberOfReady == users.length + 1 &&
-                          users.length >= 1) {
+                          users.length >= 1 &&
+                          currentUser.isOwner == 'true') {
                         listUnderCurrentUser.add(
                           FlatButton(
                             materialTapTargetSize:
