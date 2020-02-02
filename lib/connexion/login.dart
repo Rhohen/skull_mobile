@@ -268,7 +268,7 @@ class _LoginPage extends State<LoginPage> {
   }
 
   Widget showErrorMessage() {
-    if (_errorMessage.length > 0 && _errorMessage != null) {
+    if (_errorMessage != null && _errorMessage.length > 0) {
       return new Text(
         _errorMessage,
         style: TextStyle(

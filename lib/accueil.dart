@@ -24,14 +24,15 @@ class _AcceuilPage extends State<AccueilPage> {
   @override
   void initState() {
     _pseudo = "";
-    LocalUser.getPseudo().then((user) => setState(() {
-          _pseudo = user;
-        }));
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    LocalUser.getPseudo().then((user) => setState(() {
+          _pseudo = user;
+        }));
     return new Scaffold(
       appBar: new AppBar(
         title: new Text(_pseudo),

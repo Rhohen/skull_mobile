@@ -1,22 +1,21 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../localUser.dart';
 
 // ignore: must_be_immutable
 class AvatarSelector extends StatefulWidget {
   var sendAvatar;
+  final String avatar;
 
-  AvatarSelector(this.sendAvatar);
+  AvatarSelector(this.sendAvatar, this.avatar);
 
   @override
   _AvatarSelectorState createState() =>
-      new _AvatarSelectorState(this.sendAvatar);
+      new _AvatarSelectorState(this.sendAvatar, this.avatar);
 }
 
 class _AvatarSelectorState extends State<AvatarSelector> {
-  Locale curentLang;
   int _key;
-  String _avatar;
+  String myAvatar;
   var sendAvatar;
 
   List<String> avatars = [
@@ -28,15 +27,11 @@ class _AvatarSelectorState extends State<AvatarSelector> {
     'assets/pic-6.png'
   ];
 
-  _AvatarSelectorState(this.sendAvatar);
+  _AvatarSelectorState(this.sendAvatar, this.myAvatar);
 
   @override
   void initState() {
     super.initState();
-    _avatar = "assets/skull.png";
-    LocalUser.getAvatar().then((avatar) => setState(() {
-          _avatar = avatar;
-        }));
     _collapse();
   }
 
@@ -45,41 +40,51 @@ class _AvatarSelectorState extends State<AvatarSelector> {
     return _buildTiles(context);
   }
 
-  List<Widget> _avatarItems() {
-    List<Widget> list = [];
-    avatars.forEach((avatar) {
-      list.add(IconButton(
-        icon: new Image.asset(avatar),
-        onPressed: () => setAvatar(avatar),
-      ));
-    });
-
-    List<Widget> row = [];
-    row.add(new Row(
-      children: list,
-    ));
-
-    return row;
+  Widget _avatarItems() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: avatars.map(
+        (avatar) {
+          return IconButton(
+            icon: new Image.asset(avatar),
+            onPressed: () => setAvatar(avatar),
+          );
+        },
+      ).toList(),
+    );
   }
 
   Widget _buildTiles(BuildContext context) {
-    return new ExpansionTile(
-      key: new Key(_key.toString()),
-      initiallyExpanded: false,
+    return ExpansionTile(
+      key: Key(_key.toString()),
       title: showLogo(),
-      children: _avatarItems(),
+      children: <Widget>[
+        _avatarItems(),
+      ],
     );
   }
 
   Widget showLogo() {
-    return new Hero(
-      tag: 'hero',
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(0.0, 25.0, 0.0, 0.0),
-        child: CircleAvatar(
-          backgroundColor: Colors.transparent,
-          radius: 48.0,
-          child: Image.asset(_avatar),
+    double size = MediaQuery.of(context).size.height / 6;
+    if (MediaQuery.of(context).orientation != Orientation.portrait) {
+      size = MediaQuery.of(context).size.width / 6;
+    }
+
+    return Center(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(myAvatar),
+            fit: BoxFit.cover,
+          ),
+          borderRadius: BorderRadius.circular(80.0),
+          border: Border.all(
+            color: Colors.white,
+            width: 10.0,
+          ),
         ),
       ),
     );
@@ -92,10 +97,10 @@ class _AvatarSelectorState extends State<AvatarSelector> {
     } while (newKey == _key);
   }
 
-  setAvatar(String avatar) {
+  setAvatar(String selectedAvatar) {
     setState(() {
-      _avatar = avatar;
+      myAvatar = selectedAvatar;
     });
-    sendAvatar(avatar);
+    sendAvatar(selectedAvatar);
   }
 }

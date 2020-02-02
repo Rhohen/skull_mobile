@@ -21,13 +21,13 @@ class LocalUser {
     return pseudo;
   }
 
-  static Future setPseudo(String pseudo) async {
-    getPseudo().then((onValue) => getPlayer().then((onUser) => FirebaseDatabase
-        .instance
-        .reference()
-        .child('users')
-        .child(onUser.uid)
-        .update({'pseudo': pseudo})));
+  static Future setPseudo(String pseudo) {
+    return getPseudo().then((onValue) => getPlayer().then((onUser) =>
+        FirebaseDatabase.instance
+            .reference()
+            .child('users')
+            .child(onUser.uid)
+            .update({'pseudo': pseudo})));
   }
 
   static Future getAvatar() async {
@@ -42,13 +42,13 @@ class LocalUser {
     return avatar;
   }
 
-  static Future setAvatar(String avatar) async {
-    getAvatar().then((onValue) => getPlayer().then((onUser) => FirebaseDatabase
-        .instance
-        .reference()
-        .child('users')
-        .child(onUser.uid)
-        .update({'avatar': avatar})));
+  static Future setAvatar(String avatar) {
+    return getAvatar().then((onValue) => getPlayer().then((onUser) =>
+        FirebaseDatabase.instance
+            .reference()
+            .child('users')
+            .child(onUser.uid)
+            .update({'avatar': avatar})));
   }
 
   static Future getScore() async {

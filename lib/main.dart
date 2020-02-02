@@ -7,7 +7,6 @@ import 'package:skull_mobile/jouer.dart';
 import 'package:skull_mobile/lobby/lobby.dart';
 import 'package:skull_mobile/lobby/lobbyArguments.dart';
 import 'package:skull_mobile/rejoindre/rejoindre.dart';
-import 'package:skull_mobile/settings/profil/profil.dart';
 import 'package:skull_mobile/settings/settings.dart';
 import 'package:skull_mobile/splash.dart';
 import 'accueil.dart';
@@ -94,13 +93,6 @@ class MyApp extends StatelessWidget {
           case SettingsPage.routeName:
             return PageTransition(
               child: SettingsPage(),
-              type: PageTransitionType.fade,
-              settings: settings,
-            );
-            break;
-          case ProfilPage.routeName:
-            return PageTransition(
-              child: ProfilPage(),
               type: PageTransitionType.fade,
               settings: settings,
             );

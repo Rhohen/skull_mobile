@@ -44,25 +44,43 @@ class _SettingsPage extends State<SettingsPage> {
               ? Container()
               : IconButton(
                   icon: Icon(Icons.edit),
-                  onPressed: toggleEditMode,
+                  onPressed: () => toggleEditMode(false),
                 ),
         ],
       ),
       body: Stack(
         children: <Widget>[
-          showButtons(),
+          (_isDisplayMode) ? showDisplayMode() : showEditMode(),
         ],
       ),
     );
   }
 
-  void toggleEditMode() {
+  void toggleEditMode(bool forceRefresh) {
     setState(() {
       _isDisplayMode = !_isDisplayMode;
+      if (forceRefresh) {
+        refreshProfile();
+      }
     });
   }
 
-  Widget showButtons() {
+  void refreshProfile() {
+    _avatar = null;
+    _pseudo = null;
+    LocalUser.getAvatar().then((snapshot) => setState(() {
+          _avatar = snapshot;
+        }));
+    LocalUser.getPseudo().then((snapshot) => setState(() {
+          _pseudo = snapshot;
+        }));
+  }
+
+  Widget showEditMode() {
+    return ProfilPage(_avatar, _pseudo, toggleEditMode);
+  }
+
+  Widget showDisplayMode() {
     return Container(
       padding: EdgeInsets.all(16.0),
       child: (isLoadingData())
@@ -73,7 +91,6 @@ class _SettingsPage extends State<SettingsPage> {
                 showLogo(),
                 showPseudo(),
                 showScore(),
-                showPrimaryButton(),
                 LanguageSelector(),
               ],
             ),
@@ -104,6 +121,10 @@ class _SettingsPage extends State<SettingsPage> {
 
   Widget showLogo() {
     double size = MediaQuery.of(context).size.height / 6;
+    if (MediaQuery.of(context).orientation != Orientation.portrait) {
+      size = MediaQuery.of(context).size.width / 6;
+    }
+
     return Center(
       child: Container(
         width: size,
@@ -180,29 +201,6 @@ class _SettingsPage extends State<SettingsPage> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget showPrimaryButton() {
-    return Padding(
-      padding: EdgeInsets.only(top: 15.0),
-      child: SizedBox(
-        child: new Column(
-          children: <Widget>[
-            new RaisedButton(
-              elevation: 5.0,
-              shape: new RoundedRectangleBorder(
-                  borderRadius: new BorderRadius.circular(30.0)),
-              color: Colors.blue,
-              child: new Text('Profil',
-                  style: new TextStyle(fontSize: 20.0, color: Colors.white)),
-              onPressed: () {
-                Navigator.pushNamed(context, ProfilPage.routeName);
-              },
-            ),
-          ],
         ),
       ),
     );
