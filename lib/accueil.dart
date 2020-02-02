@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:skull_mobile/settings/localUser.dart';
 import 'package:skull_mobile/settings/settings.dart';
+import 'MenuItems.dart';
 import 'jouer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -35,13 +36,17 @@ class _AcceuilPage extends State<AccueilPage> {
       appBar: new AppBar(
         title: new Text(_pseudo),
         actions: <Widget>[
-          FlatButton(
-            shape: new CircleBorder(),
-            onPressed: () {
-              Navigator.pushNamed(context, SettingsPage.routeName);
+          PopupMenuButton<String>(
+            onSelected: choiceAction,
+            itemBuilder: (BuildContext context) {
+              return MenuItems.choices.entries.map((elem) {
+                return PopupMenuItem<String>(
+                  value: elem.key,
+                  child: MenuItems.rowItem(elem.key, elem.value),
+                );
+              }).toList();
             },
-            child: new Icon(Icons.settings),
-          ),
+          )
         ],
       ),
       body: Stack(
@@ -50,6 +55,14 @@ class _AcceuilPage extends State<AccueilPage> {
         ],
       ),
     );
+  }
+
+  void choiceAction(String choice) {
+    if (choice == MenuItems.Settings) {
+      Navigator.pushNamed(context, SettingsPage.routeName);
+    } else if (choice == MenuItems.SignOut) {
+      LocalUser.logout(context);
+    }
   }
 
   Widget showLogo() {

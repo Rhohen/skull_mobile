@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:skull_mobile/accueil.dart';
+import 'dart:developer' as LOGGER;
 
 class LoginPage extends StatefulWidget {
   static const routeName = '/LoginPage';
@@ -34,41 +35,58 @@ class _LoginPage extends State<LoginPage> {
     }
   }
 
-  void validateAndSubmit() {
+  void validateAndSubmit() async {
     setState(() {
       _errorMessage = "";
       _isLoading = true;
     });
     if (validateAndSave()) {
-      if (_isLoginForm) {
-        FirebaseAuth.instance
-            .signInWithEmailAndPassword(email: _email, password: _password)
-            .then(
-                (user) => {Navigator.pushNamed(context, AccueilPage.routeName)})
-            .catchError((onError) => _errorMessage = onError);
-      } else {
-        FirebaseAuth.instance
-            .createUserWithEmailAndPassword(email: _email, password: _password)
-            .then((user) => {
+      try {
+        if (_isLoginForm) {
+          await FirebaseAuth.instance
+              .signInWithEmailAndPassword(
+                email: _email,
+                password: _password,
+              )
+              .then(
+                (user) => {
+                  Navigator.pushNamed(context, AccueilPage.routeName),
+                },
+              );
+        } else {
+          await FirebaseAuth.instance
+              .createUserWithEmailAndPassword(
+                  email: _email, password: _password)
+              .then(
+                (user) => {
                   FirebaseDatabase.instance
                       .reference()
                       .child('users')
                       .child(user.uid)
-                      .set({
-                        "mail": _email,
-                        "pseudo": _pseudo,
-                        "avatar": 'assets/pic-5.png',
-                        "score": 0
-                      })
-                      .then((onValue) =>
-                          {Navigator.pushNamed(context, AccueilPage.routeName)})
-                      .catchError((onError) => _errorMessage = onError)
-                })
-            .catchError((onError) => _errorMessage = onError);
+                      .set(
+                    {
+                      "mail": _email,
+                      "pseudo": _pseudo,
+                      "avatar": 'assets/pic-5.png',
+                      "score": 0
+                    },
+                  ).then(
+                    (onValue) =>
+                        {Navigator.pushNamed(context, AccueilPage.routeName)},
+                  )
+                },
+              );
+        }
+        setState(() {
+          _isLoading = false;
+        });
+      } catch (e) {
+        LOGGER.log("Error: $e");
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.message;
+        });
       }
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -149,11 +167,12 @@ class _LoginPage extends State<LoginPage> {
         keyboardType: TextInputType.emailAddress,
         autofocus: false,
         decoration: new InputDecoration(
-            hintText: 'Email',
-            icon: new Icon(
-              Icons.email,
-              color: Colors.grey,
-            )),
+          hintText: 'Email',
+          icon: new Icon(
+            Icons.email,
+            color: Colors.grey,
+          ),
+        ),
         validator: (value) =>
             !EmailValidator.validate(value, true) ? 'Not a valid email.' : null,
         onSaved: (value) => _email = value.trim(),
@@ -163,24 +182,25 @@ class _LoginPage extends State<LoginPage> {
 
   Widget showPseudoInput() {
     return Visibility(
-        visible: !_isLoginForm,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
-          child: new TextFormField(
-            maxLines: 1,
-            keyboardType: TextInputType.text,
-            autofocus: false,
-            decoration: new InputDecoration(
-                hintText: 'Pseudo',
-                icon: new Icon(
-                  Icons.account_circle,
-                  color: Colors.grey,
-                )),
-            validator: (value) =>
-                value.isEmpty ? 'Pseudo can\'t be empty' : null,
-            onSaved: (value) => _pseudo = value,
+      visible: !_isLoginForm,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
+        child: new TextFormField(
+          maxLines: 1,
+          keyboardType: TextInputType.text,
+          autofocus: false,
+          decoration: new InputDecoration(
+            hintText: 'Pseudo',
+            icon: new Icon(
+              Icons.account_circle,
+              color: Colors.grey,
+            ),
           ),
-        ));
+          validator: (value) => value.isEmpty ? 'Pseudo can\'t be empty' : null,
+          onSaved: (value) => _pseudo = value,
+        ),
+      ),
+    );
   }
 
   Widget showPasswordInput() {
@@ -191,11 +211,12 @@ class _LoginPage extends State<LoginPage> {
         obscureText: true,
         autofocus: false,
         decoration: new InputDecoration(
-            hintText: 'Password',
-            icon: new Icon(
-              Icons.lock,
-              color: Colors.grey,
-            )),
+          hintText: 'Password',
+          icon: new Icon(
+            Icons.lock,
+            color: Colors.grey,
+          ),
+        ),
         validator: (value) => value.isEmpty ? 'Password can\'t be empty' : null,
         onSaved: (value) => _password = value.trim(),
       ),
@@ -204,27 +225,39 @@ class _LoginPage extends State<LoginPage> {
 
   Widget showPrimaryButton() {
     return new Padding(
-        padding: EdgeInsets.fromLTRB(0.0, 45.0, 0.0, 0.0),
-        child: SizedBox(
-          height: 40.0,
-          child: new RaisedButton(
-            elevation: 5.0,
-            shape: new RoundedRectangleBorder(
-                borderRadius: new BorderRadius.circular(30.0)),
-            color: Colors.blue,
-            child: new Text(_isLoginForm ? 'Login' : 'Create account',
-                style: new TextStyle(fontSize: 20.0, color: Colors.white)),
-            onPressed: validateAndSubmit,
+      padding: EdgeInsets.fromLTRB(0.0, 45.0, 0.0, 0.0),
+      child: SizedBox(
+        height: 40.0,
+        child: new RaisedButton(
+          elevation: 5.0,
+          shape: new RoundedRectangleBorder(
+            borderRadius: new BorderRadius.circular(30.0),
           ),
-        ));
+          color: Colors.blue,
+          child: new Text(
+            _isLoginForm ? 'Login' : 'Create account',
+            style: new TextStyle(
+              fontSize: 20.0,
+              color: Colors.white,
+            ),
+          ),
+          onPressed: validateAndSubmit,
+        ),
+      ),
+    );
   }
 
   Widget showSecondaryButton() {
     return new FlatButton(
-        child: new Text(
-            _isLoginForm ? 'Create an account' : 'Have an account? Sign in',
-            style: new TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300)),
-        onPressed: toggleFormMode);
+      child: new Text(
+        _isLoginForm ? 'Create an account' : 'Have an account? Sign in',
+        style: new TextStyle(
+          fontSize: 18.0,
+          fontWeight: FontWeight.w300,
+        ),
+      ),
+      onPressed: toggleFormMode,
+    );
   }
 
   void toggleFormMode() {
@@ -239,10 +272,11 @@ class _LoginPage extends State<LoginPage> {
       return new Text(
         _errorMessage,
         style: TextStyle(
-            fontSize: 13.0,
-            color: Colors.red,
-            height: 1.0,
-            fontWeight: FontWeight.w300),
+          fontSize: 13.0,
+          color: Colors.red,
+          height: 1.0,
+          fontWeight: FontWeight.w300,
+        ),
       );
     } else {
       return new Container(

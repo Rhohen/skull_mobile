@@ -47,6 +47,7 @@ dependencies:
   flutter_i18n: ^0.8.3
   dotted_border: ^1.0.4
   screen_state: ^0.1.1
+  flutter_progress_button: ^0.6.4
 
 dev_dependencies:
   flutter_test:
