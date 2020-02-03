@@ -11,12 +11,14 @@ class ProfilPage extends StatefulWidget {
   final String avatar;
   final String pseudo;
   var toggleEditMode;
+  var disableToggleMode;
 
-  ProfilPage(this.avatar, this.pseudo, this.toggleEditMode);
+  ProfilPage(
+      this.avatar, this.pseudo, this.toggleEditMode, this.disableToggleMode);
 
   @override
-  State<StatefulWidget> createState() =>
-      new _ProfilPage(this.avatar, this.pseudo, this.toggleEditMode);
+  State<StatefulWidget> createState() => new _ProfilPage(
+      this.avatar, this.pseudo, this.toggleEditMode, this.disableToggleMode);
 }
 
 class _ProfilPage extends State<ProfilPage> {
@@ -27,8 +29,10 @@ class _ProfilPage extends State<ProfilPage> {
   String _errorMessage;
   bool isLoading;
   var toggleEditMode;
+  var disableToggleMode;
 
-  _ProfilPage(this.avatar, this.pseudo, this.toggleEditMode);
+  _ProfilPage(
+      this.avatar, this.pseudo, this.toggleEditMode, this.disableToggleMode);
 
   @override
   void initState() {
@@ -103,8 +107,9 @@ class _ProfilPage extends State<ProfilPage> {
     if (avatar != null && avatar != '') {
       if (_pseudo.text != null && _pseudo.text.length > 3) {
         isLoading = true;
-        LocalUser.setPseudo(_pseudo.text).whenComplete(() {
-          LocalUser.setAvatar(avatar).whenComplete(() {
+        disableToggleMode();
+        LocalUser().setPseudo(_pseudo.text).whenComplete(() {
+          LocalUser().setAvatar(avatar).whenComplete(() {
             isLoading = false;
             toggleEditMode(true);
           });
@@ -118,7 +123,6 @@ class _ProfilPage extends State<ProfilPage> {
   }
 
   sendAvatar(String value) {
-    print(value);
     avatar = value;
   }
 

@@ -19,23 +19,17 @@ class AccueilPage extends StatefulWidget {
 }
 
 class _AcceuilPage extends State<AccueilPage> {
-  String _pseudo;
-
   @override
   void initState() {
-    _pseudo = "";
-
+    LocalUser().getPseudo().then((onValue) => setState(() {}));
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    LocalUser.getPseudo().then((user) => setState(() {
-          _pseudo = user;
-        }));
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text(_pseudo),
+        title: new Text(LocalUser().getLocalPseudo()),
         actions: <Widget>[
           PopupMenuButton<String>(
             onSelected: choiceAction,
@@ -50,27 +44,19 @@ class _AcceuilPage extends State<AccueilPage> {
           )
         ],
       ),
-      body: WillPopScope(
-        onWillPop: _onBackPressed,
-        child: Stack(
-          children: <Widget>[
-            accessButtons(context),
-          ],
-        ),
+      body: Stack(
+        children: <Widget>[
+          accessButtons(context),
+        ],
       ),
     );
-  }
-
-  Future<bool> _onBackPressed() {
-    LocalUser.logout(context);
-    return Future.value(false);
   }
 
   void choiceAction(String choice) {
     if (choice == MenuItems.Profile) {
       Navigator.pushNamed(context, SettingsPage.routeName);
     } else if (choice == MenuItems.SignOut) {
-      LocalUser.logout(context);
+      LocalUser().logout(context);
     }
   }
 

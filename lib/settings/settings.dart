@@ -14,22 +14,13 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPage extends State<SettingsPage> {
-  String _avatar;
-  String _pseudo;
-  int _score;
   bool _isDisplayMode;
 
   @override
   void initState() {
-    LocalUser.getAvatar().then((snapshot) => setState(() {
-          _avatar = snapshot;
-        }));
-    LocalUser.getPseudo().then((snapshot) => setState(() {
-          _pseudo = snapshot;
-        }));
-    LocalUser.getScore().then((snapshot) => setState(() {
-          _score = snapshot;
-        }));
+    LocalUser().getAvatar().then((snapshot) => setState(() {}));
+    LocalUser().getPseudo().then((snapshot) => setState(() {}));
+    LocalUser().getScore().then((snapshot) => setState(() {}));
     _isDisplayMode = true;
     super.initState();
   }
@@ -65,19 +56,21 @@ class _SettingsPage extends State<SettingsPage> {
     });
   }
 
+  void disableToggleMode() {
+    setState(() {
+      LocalUser().setLocalPseudo("");
+      LocalUser().setLocalAvatar("");
+    });
+  }
+
   void refreshProfile() {
-    _avatar = null;
-    _pseudo = null;
-    LocalUser.getAvatar().then((snapshot) => setState(() {
-          _avatar = snapshot;
-        }));
-    LocalUser.getPseudo().then((snapshot) => setState(() {
-          _pseudo = snapshot;
-        }));
+    LocalUser().getAvatar().then((snapshot) => setState(() {}));
+    LocalUser().getPseudo().then((snapshot) => setState(() {}));
   }
 
   Widget showEditMode() {
-    return ProfilPage(_avatar, _pseudo, toggleEditMode);
+    return ProfilPage(LocalUser().getLocalAvatar(),
+        LocalUser().getLocalPseudo(), toggleEditMode, disableToggleMode);
   }
 
   Widget showDisplayMode() {
@@ -116,7 +109,9 @@ class _SettingsPage extends State<SettingsPage> {
   }
 
   bool isLoadingData() {
-    return _avatar == null || _pseudo == null || _score == null;
+    return LocalUser().getLocalAvatar().isEmpty ||
+        LocalUser().getLocalPseudo().isEmpty ||
+        LocalUser().getLocalScore() < 0;
   }
 
   Widget showLogo() {
@@ -131,7 +126,7 @@ class _SettingsPage extends State<SettingsPage> {
         height: size,
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(_avatar),
+            image: AssetImage(LocalUser().getLocalAvatar()),
             fit: BoxFit.cover,
           ),
           borderRadius: BorderRadius.circular(80.0),
@@ -149,7 +144,7 @@ class _SettingsPage extends State<SettingsPage> {
       padding: EdgeInsets.only(top: 15.0),
       child: Center(
         child: Text(
-          _pseudo,
+          LocalUser().getLocalPseudo(),
           style: TextStyle(
             fontFamily: 'Roboto',
             color: Colors.black,
@@ -180,7 +175,7 @@ class _SettingsPage extends State<SettingsPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Text(
-                      _score.toString(),
+                      LocalUser().getLocalScore().toString(),
                       style: TextStyle(
                         color: Colors.black54,
                         fontSize: 24.0,
@@ -188,7 +183,7 @@ class _SettingsPage extends State<SettingsPage> {
                       ),
                     ),
                     Text(
-                      "Victoire${(_score == 1 ? '' : 's')}",
+                      "Victoire${(LocalUser().getLocalScore() == 1 ? '' : 's')}",
                       style: TextStyle(
                         fontFamily: 'Roboto',
                         color: Colors.black,

@@ -40,8 +40,7 @@ class JouerPage extends StatelessWidget {
                   borderRadius: new BorderRadius.circular(18.0),
                   side: BorderSide(color: Colors.blue)),
               onPressed: () {
-                LocalUser.getUser().then((userValue) {
-                  print(userValue);
+                LocalUser().getUser().then((userValue) {
                   LobbyArguments lobbyArgs = new LobbyArguments(
                     "-Lx7KJcaKvlwpe2z2dEp",
                     userValue,

@@ -69,7 +69,6 @@ class DialogForm extends StatelessWidget {
   }
 
   String _validatePseudo(String value) {
-    print(value);
     if (value.length < 3) {
       return 'Votre pseudo doit faire au moins 3 charactères';
     } else {

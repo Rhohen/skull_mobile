@@ -484,7 +484,7 @@ class GamePageState extends State<GamePage> {
   }
 
   void showEndGamePopup(String winnerKey) {
-    if (currentUser.key == winnerKey) LocalUser.setScore();
+    if (currentUser.key == winnerKey) LocalUser().setScore();
     AwesomeDialog(
       customHeader: Container(
         width: 100.0,

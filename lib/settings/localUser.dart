@@ -5,23 +5,35 @@ import 'package:skull_mobile/connexion/login.dart';
 import 'package:skull_mobile/lobby/userModel.dart';
 
 class LocalUser {
-  static Future<FirebaseUser> getPlayer() {
+  String _pseudo = "";
+  int _score = -1;
+  String _avatar = "";
+
+  static final LocalUser _singleton = LocalUser._internal();
+
+  factory LocalUser() {
+    return _singleton;
+  }
+
+  /// Constructeur privé interne
+  LocalUser._internal();
+
+  Future<FirebaseUser> getPlayer() {
     return FirebaseAuth.instance.currentUser();
   }
 
-  static Future getPseudo() async {
-    String pseudo;
+  Future getPseudo() async {
     await getPlayer().then((onValue) => FirebaseDatabase.instance
         .reference()
         .child('users')
         .child(onValue.uid)
         .child('pseudo')
         .once()
-        .then((snapshot) => pseudo = snapshot.value));
-    return pseudo;
+        .then((snapshot) => _pseudo = snapshot.value));
+    return _pseudo;
   }
 
-  static Future setPseudo(String pseudo) {
+  Future setPseudo(String pseudo) {
     return getPseudo().then((onValue) => getPlayer().then((onUser) =>
         FirebaseDatabase.instance
             .reference()
@@ -30,19 +42,18 @@ class LocalUser {
             .update({'pseudo': pseudo})));
   }
 
-  static Future getAvatar() async {
-    String avatar;
+  Future getAvatar() async {
     await getPlayer().then((onValue) => FirebaseDatabase.instance
         .reference()
         .child('users')
         .child(onValue.uid)
         .child('avatar')
         .once()
-        .then((snapshot) => avatar = snapshot.value));
-    return avatar;
+        .then((snapshot) => _avatar = snapshot.value));
+    return _avatar;
   }
 
-  static Future setAvatar(String avatar) {
+  Future setAvatar(String avatar) {
     return getAvatar().then((onValue) => getPlayer().then((onUser) =>
         FirebaseDatabase.instance
             .reference()
@@ -51,19 +62,18 @@ class LocalUser {
             .update({'avatar': avatar})));
   }
 
-  static Future getScore() async {
-    int score;
+  Future getScore() async {
     await getPlayer().then((onValue) => FirebaseDatabase.instance
         .reference()
         .child('users')
         .child(onValue.uid)
         .child('score')
         .once()
-        .then((snapshot) => score = snapshot.value));
-    return score;
+        .then((snapshot) => _score = snapshot.value));
+    return _score;
   }
 
-  static Future setScore() async {
+  Future setScore() async {
     getScore().then((onValue) => getPlayer().then((onUser) => FirebaseDatabase
         .instance
         .reference()
@@ -72,7 +82,7 @@ class LocalUser {
         .update({'score': (onValue + 1)})));
   }
 
-  static Future getUser() async {
+  Future getUser() async {
     User user;
     await getPlayer().then((onValue) => FirebaseDatabase.instance
             .reference()
@@ -92,9 +102,33 @@ class LocalUser {
     return user;
   }
 
-  static logout(BuildContext context) {
+  logout(BuildContext context) {
     FirebaseAuth.instance.signOut().then((onValue) => {
           Navigator.popUntil(context, ModalRoute.withName(LoginPage.routeName))
         });
+  }
+
+  String getLocalPseudo() {
+    return _singleton._pseudo;
+  }
+
+  int getLocalScore() {
+    return _singleton._score;
+  }
+
+  String getLocalAvatar() {
+    return _singleton._avatar;
+  }
+
+  void setLocalAvatar(String avatar) {
+    _singleton._avatar = avatar;
+  }
+
+  void setLocalPseudo(String pseudo) {
+    _singleton._pseudo = pseudo;
+  }
+
+  void setLocalScore(int score) {
+    _singleton._score = score;
   }
 }
