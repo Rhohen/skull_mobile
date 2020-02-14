@@ -104,7 +104,8 @@ class LocalUser {
 
   logout(BuildContext context) {
     FirebaseAuth.instance.signOut().then((onValue) => {
-          Navigator.popUntil(context, ModalRoute.withName(LoginPage.routeName))
+          Navigator.pushNamedAndRemoveUntil(context, LoginPage.routeName,
+              ModalRoute.withName(LoginPage.routeName))
         });
   }
 

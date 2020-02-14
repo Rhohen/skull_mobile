@@ -3,6 +3,7 @@ import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:skull_mobile/settings/localUser.dart';
 
+import '../../glowRemover.dart';
 import 'avatarSelector.dart';
 
 class ProfilPage extends StatefulWidget {
@@ -46,15 +47,19 @@ class _ProfilPage extends State<ProfilPage> {
     return (isLoading)
         ? showCircularProgress()
         : Container(
-            padding: EdgeInsets.all(16.0),
-            child: new ListView(
-              shrinkWrap: true,
-              children: <Widget>[
-                AvatarSelector(sendAvatar, avatar),
-                pseudoEditor(),
-                saveButton(),
-                showErrorMessage()
-              ],
+            padding: EdgeInsets.only(left: 16.0, right: 16.0),
+            child: ScrollConfiguration(
+              behavior: GlowRemover(),
+              child: ListView(
+                shrinkWrap: true,
+                children: <Widget>[
+                  SizedBox(height: 20),
+                  AvatarSelector(sendAvatar, avatar),
+                  pseudoEditor(),
+                  saveButton(),
+                  showErrorMessage()
+                ],
+              ),
             ),
           );
   }

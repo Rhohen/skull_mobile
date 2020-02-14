@@ -2,6 +2,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:toast/toast.dart';
+import '../glowRemover.dart';
 import '../lobby/lobby.dart';
 import '../lobby/lobbyArguments.dart';
 import '../lobby/userModel.dart';
@@ -56,9 +57,10 @@ class _CreerPage extends State<CreerPage> {
                     }).show(),
               ),
             ),
-            body: SingleChildScrollView(
+            body: ScrollConfiguration(
+              behavior: GlowRemover(),
               child: Container(
-                margin: EdgeInsets.all(15.0),
+                margin: EdgeInsets.only(left: 46.0, right: 46.0),
                 child: Form(
                   key: _key,
                   autovalidate: _validate,
@@ -70,59 +72,50 @@ class _CreerPage extends State<CreerPage> {
 
   Widget formUI() {
     double logoSize = MediaQuery.of(context).size.height * 0.3;
-    const double vertical = 8.0;
-    const double horizontal = 46.0;
-
     return Container(
-        margin: new EdgeInsets.all(15.0),
-        child: Container(
-            alignment: Alignment.center,
-            child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: vertical,
-                  horizontal: horizontal,
-                ),
-                child: ListView(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.all(8.0),
-                  children: <Widget>[
-                    view.getImage('assets/skull.png', logoSize),
-                    TextFormField(
-                      decoration: view.getNameDecorator(),
-                      maxLength: 32,
-                      validator: validateName,
-                      onSaved: (String val) {
-                        name = val;
-                      },
-                    ),
-                    TextFormField(
-                        decoration: view.getPasswordDecorator(),
-                        keyboardType: TextInputType.text,
-                        maxLength: 32,
-                        onSaved: (String val) {
-                          password = val;
-                        }),
-                    Container(child: view.getNumberPlayerText()),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        Slider(
-                          activeColor: Colors.grey[800],
-                          inactiveColor: Colors.grey[400],
-                          min: 3,
-                          max: 10,
-                          onChanged: (_value) {
-                            setState(() => nbPlayerMax = _value);
-                          },
-                          value: nbPlayerMax,
-                        ),
-                        Text(nbPlayerMax.toInt().toString()),
-                      ],
-                    ),
-                    SizedBox(height: 15.0),
-                    _submitButton(context),
-                  ],
-                ))));
+      alignment: Alignment.center,
+      child: ListView(
+        shrinkWrap: true,
+        padding: const EdgeInsets.all(8.0),
+        children: <Widget>[
+          view.getImage('assets/skull.png', logoSize),
+          TextFormField(
+            decoration: view.getNameDecorator(),
+            maxLength: 32,
+            validator: validateName,
+            onSaved: (String val) {
+              name = val;
+            },
+          ),
+          TextFormField(
+              decoration: view.getPasswordDecorator(),
+              keyboardType: TextInputType.text,
+              maxLength: 32,
+              onSaved: (String val) {
+                password = val;
+              }),
+          Container(child: view.getNumberPlayerText()),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Slider(
+                activeColor: Colors.grey[800],
+                inactiveColor: Colors.grey[400],
+                min: 3,
+                max: 10,
+                onChanged: (_value) {
+                  setState(() => nbPlayerMax = _value);
+                },
+                value: nbPlayerMax,
+              ),
+              Text(nbPlayerMax.toInt().toString()),
+            ],
+          ),
+          SizedBox(height: 15.0),
+          _submitButton(context),
+        ],
+      ),
+    );
   }
 
   _submitButton(BuildContext context) {

@@ -15,10 +15,10 @@ class AccueilPage extends StatefulWidget {
   AccueilPage({Key key}) : super(key: key);
 
   @override
-  _AcceuilPage createState() => _AcceuilPage();
+  _AccueilPage createState() => _AccueilPage();
 }
 
-class _AcceuilPage extends State<AccueilPage> {
+class _AccueilPage extends State<AccueilPage> {
   @override
   void initState() {
     LocalUser().getPseudo().then((onValue) => setState(() {}));
@@ -27,7 +27,7 @@ class _AcceuilPage extends State<AccueilPage> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
+    return Scaffold(
       appBar: new AppBar(
         title: new Text(LocalUser().getLocalPseudo()),
         actions: <Widget>[
@@ -44,10 +44,13 @@ class _AcceuilPage extends State<AccueilPage> {
           )
         ],
       ),
-      body: Stack(
-        children: <Widget>[
-          accessButtons(context),
-        ],
+      body: WillPopScope(
+        onWillPop: () => LocalUser().logout(context),
+        child: Stack(
+          children: <Widget>[
+            accessButtons(context),
+          ],
+        ),
       ),
     );
   }

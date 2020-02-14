@@ -4,6 +4,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:skull_mobile/settings/localUser.dart';
 import 'package:skull_mobile/settings/profil/profil.dart';
 
+import '../glowRemover.dart';
 import 'languageSelector.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -75,17 +76,21 @@ class _SettingsPage extends State<SettingsPage> {
 
   Widget showDisplayMode() {
     return Container(
-      padding: EdgeInsets.all(16.0),
+      padding: EdgeInsets.only(left: 16.0, right: 16.0),
       child: (isLoadingData())
           ? showCircularProgress()
-          : ListView(
-              shrinkWrap: true,
-              children: <Widget>[
-                showLogo(),
-                showPseudo(),
-                showScore(),
-                LanguageSelector(),
-              ],
+          : ScrollConfiguration(
+              behavior: GlowRemover(),
+              child: ListView(
+                shrinkWrap: true,
+                children: <Widget>[
+                  SizedBox(height: 20),
+                  showLogo(),
+                  showPseudo(),
+                  showScore(),
+                  LanguageSelector(),
+                ],
+              ),
             ),
     );
   }
