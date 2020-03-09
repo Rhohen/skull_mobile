@@ -188,7 +188,7 @@ class _SettingsPage extends State<SettingsPage> {
                       ),
                     ),
                     Text(
-                      "Victoire${(LocalUser().getLocalScore() == 1 ? '' : 's')}",
+                      FlutterI18n.translate(context, "victories"),
                       style: TextStyle(
                         fontFamily: 'Roboto',
                         color: Colors.black,

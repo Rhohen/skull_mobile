@@ -103,7 +103,8 @@ class _AccueilPage extends State<AccueilPage> {
               //Navigator.pushNamed(context, WidgetTester.routeName);
               _launchURL();
             },
-            child: Text('Règles', style: TextStyle(fontSize: 20)),
+            child: Text(FlutterI18n.translate(context, "rules"),
+                style: TextStyle(fontSize: 20)),
           ),
         ],
       ),

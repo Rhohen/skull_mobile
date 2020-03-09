@@ -214,7 +214,7 @@ class GamePageState extends State<GamePage> {
                     Colors.blue[300], Duration(seconds: 5));
               } else {
                 showFlushMessage(
-                    "C'est le tour de ${players[gameMessage.currentPlayer].name}",
+                    "C'est le tour de ${players[gameMessage.nextPlayer].name}",
                     Colors.blue[300],
                     Duration(seconds: 5));
               }
