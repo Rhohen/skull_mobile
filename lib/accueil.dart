@@ -30,6 +30,7 @@ class _AccueilPage extends State<AccueilPage> {
     return Scaffold(
       appBar: new AppBar(
         title: new Text(LocalUser().getLocalPseudo()),
+        backgroundColor: Colors.grey[800],
         actions: <Widget>[
           PopupMenuButton<String>(
             onSelected: choiceAction,
@@ -87,7 +88,7 @@ class _AccueilPage extends State<AccueilPage> {
             elevation: 5.0,
             shape: new RoundedRectangleBorder(
                 borderRadius: new BorderRadius.circular(30.0)),
-            color: Colors.blue,
+            color: Colors.grey[800],
             onPressed: () {
               Navigator.pushNamed(context, JouerPage.routeName);
             },

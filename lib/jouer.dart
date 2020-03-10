@@ -15,6 +15,7 @@ class JouerPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("Jouer a Skull"),
+        backgroundColor: Colors.grey[800],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startTop,
       body: Center(
@@ -22,16 +23,30 @@ class JouerPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             RaisedButton(
+              elevation: 5.0,
+              shape: new RoundedRectangleBorder(
+                  borderRadius: new BorderRadius.circular(30.0)),
+              color: Colors.grey[800],
               onPressed: () {
                 Navigator.pushNamed(context, CreerPage.routeName);
               },
-              child: Text('Créer partie', style: TextStyle(fontSize: 20)),
+              child: Text(
+                'Créer partie',
+                style: new TextStyle(fontSize: 20.0, color: Colors.white),
+              ),
             ),
             RaisedButton(
+              elevation: 5.0,
+              shape: new RoundedRectangleBorder(
+                  borderRadius: new BorderRadius.circular(30.0)),
+              color: Colors.grey[800],
               onPressed: () {
                 Navigator.pushNamed(context, RejoindrePage.routeName);
               },
-              child: Text('Rejoindre partie', style: TextStyle(fontSize: 20)),
+              child: Text(
+                'Rejoindre partie',
+                style: new TextStyle(fontSize: 20.0, color: Colors.white),
+              ),
             ),
             Opacity(
               opacity: 0.0,

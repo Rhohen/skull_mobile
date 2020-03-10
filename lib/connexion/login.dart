@@ -109,6 +109,7 @@ class _LoginPage extends State<LoginPage> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
+        backgroundColor: Colors.grey[800],
         title: new Text("Connexion"),
       ),
       body: Stack(

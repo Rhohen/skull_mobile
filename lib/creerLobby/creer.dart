@@ -1,6 +1,8 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:skull_mobile/game/EGameState.dart';
+import 'package:skull_mobile/settings/localUser.dart';
 import 'package:toast/toast.dart';
 import '../glowRemover.dart';
 import '../lobby/lobby.dart';
@@ -122,6 +124,10 @@ class _CreerPage extends State<CreerPage> {
     return isLoading
         ? view.getHourglassLoading()
         : RaisedButton(
+            elevation: 5.0,
+            shape: new RoundedRectangleBorder(
+              borderRadius: new BorderRadius.circular(30.0),
+            ),
             onPressed: () => _submit(context),
             //createLobby(),
             textColor: Colors.white,
@@ -143,7 +149,7 @@ class _CreerPage extends State<CreerPage> {
     }
   }
 
-  _createLobby(BuildContext context) {
+  _createLobby(BuildContext context) async {
     setState(() {
       isLoading = true;
     });
@@ -154,22 +160,30 @@ class _CreerPage extends State<CreerPage> {
         .set({
           "name": name,
           "password": password,
-          "nbPlayerMax": nbPlayerMax.toInt()
+          "nbPlayerMax": nbPlayerMax.toInt(),
+          "state": EGameState.INITIALIZING,
         })
         .whenComplete(() => {_redirectToLobby(context, lobbyRef.key)})
         .timeout(Duration(seconds: 5), onTimeout: () {
           setState(() {
             isLoading = false;
           });
-          Toast.show("Erreur de connexion avec la base de donnée", context,
+          Toast.show("Erreur de connexion avec la base de données", context,
               duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
         });
   }
 
-  _redirectToLobby(BuildContext context, String id) {
-    LobbyArguments lobbyArgs =
-        new LobbyArguments(id, User.generate("admin"), context);
-    Navigator.pushNamed(context, Lobby.routeName, arguments: lobbyArgs);
+  _redirectToLobby(BuildContext context, String id) async {
+    LocalUser().getUser().then((userValue) {
+      User user = userValue;
+      user.isOwner = 'true';
+      LobbyArguments lobbyArgs = new LobbyArguments(
+        id,
+        user,
+        context,
+      );
+      Navigator.pushNamed(context, Lobby.routeName, arguments: lobbyArgs);
+    });
   }
 
   String validateName(String value) {

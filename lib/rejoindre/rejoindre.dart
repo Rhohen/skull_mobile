@@ -69,6 +69,7 @@ class _RejoindrePage extends State<RejoindrePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.grey[800],
           title: Text(
             "Rejoindre Partie",
             style: TextStyle(fontSize: 20),
@@ -90,7 +91,9 @@ class _RejoindrePage extends State<RejoindrePage> {
           controller: _searchview,
           decoration: InputDecoration(
             hintText: "Search",
+            fillColor: Colors.grey[800],
           ),
+          cursorColor: Colors.grey[800],
           textAlign: TextAlign.center,
         ));
   }
@@ -101,25 +104,38 @@ class _RejoindrePage extends State<RejoindrePage> {
           itemCount: _lobbyList.length,
           itemBuilder: (BuildContext context, int index) {
             return new Card(
-              color: Colors.white,
+              color: Colors.grey[800],
               elevation: 5.0,
               child: new InkWell(
-                  splashColor: Colors.blue.withAlpha(30),
-                  onTap: () => showDialog(
-                        context: context,
-                        child: DialogForm(
-                            _lobbyList[index].key, _lobbyList[index].password),
-                      ),
-                  child: ListTile(
-                    leading: (_lobbyList[index].password != null &&
-                            _lobbyList[index].password != "")
-                        ? Icon(Icons.lock, size: 32)
-                        : null,
-                    title: new Text("${_lobbyList[index].name}"),
-                    subtitle:
-                        new Text("Joueurs 3/${_lobbyList[index].nbPlayerMax}"),
-                    trailing: Icon(Icons.play_circle_outline),
-                  )),
+                splashColor: Colors.blue.withAlpha(30),
+                onTap: () => showDialog(
+                  context: context,
+                  child: DialogForm(
+                      _lobbyList[index].key, _lobbyList[index].password),
+                ),
+                child: ListTile(
+                  leading: (_lobbyList[index].password != null &&
+                          _lobbyList[index].password != "")
+                      ? Icon(
+                          Icons.lock,
+                          size: 32,
+                          color: Colors.white,
+                        )
+                      : null,
+                  title: Text(
+                    "${_lobbyList[index].name}",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  subtitle: Text(
+                    "Joueurs 0/${_lobbyList[index].nbPlayerMax}",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  trailing: Icon(
+                    Icons.play_circle_outline,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             );
           }),
     );
@@ -140,24 +156,33 @@ class _RejoindrePage extends State<RejoindrePage> {
           itemCount: _filteredLobbyList.length,
           itemBuilder: (BuildContext context, int index) {
             return new Card(
-              color: Colors.white,
+              color: Colors.grey[800],
               elevation: 5.0,
               child: new InkWell(
-                  splashColor: Colors.blue.withAlpha(30),
-                  onTap: () => showDialog(
-                        context: context,
-                        child: DialogForm(_filteredLobbyList[index].key,
-                            _filteredLobbyList[index].password),
-                      ),
-                  child: ListTile(
-                    leading: (_filteredLobbyList[index].password.isEmpty)
-                        ? null
-                        : Icon(Icons.lock, size: 32),
-                    title: new Text("${_filteredLobbyList[index].name}"),
-                    subtitle: new Text(
-                        "Joueurs 3/${_filteredLobbyList[index].nbPlayerMax}"),
-                    trailing: Icon(Icons.play_circle_outline),
-                  )),
+                splashColor: Colors.blue.withAlpha(30),
+                onTap: () => showDialog(
+                  context: context,
+                  child: DialogForm(_filteredLobbyList[index].key,
+                      _filteredLobbyList[index].password),
+                ),
+                child: ListTile(
+                  leading: (_filteredLobbyList[index].password.isEmpty)
+                      ? null
+                      : Icon(Icons.lock, size: 32, color: Colors.white),
+                  title: new Text(
+                    "${_filteredLobbyList[index].name}",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  subtitle: new Text(
+                    "Joueurs 0/${_filteredLobbyList[index].nbPlayerMax}",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  trailing: Icon(
+                    Icons.play_circle_outline,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             );
           }),
     );

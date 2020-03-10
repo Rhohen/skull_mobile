@@ -50,12 +50,20 @@ class _Lobby extends State<Lobby> {
         }
         if (emptyRoom) {
           currentUser.isOwner = 'true';
-          lobbyRef.child("state").set(EGameState.INITIALIZING);
+          lobbyRef.set({
+            "name": "testgame",
+            "password": "",
+            "nbPlayerMax": 6,
+            "state": EGameState.INITIALIZING
+          });
         }
       }
       var generatedReference = lobbyRef.push();
       currentUser.key = generatedReference.key;
       generatedReference.set(currentUser.toJson());
+
+      //lobbyRef.child("users").push().set(currentUser.name);
+
       setState(() {});
     });
 
