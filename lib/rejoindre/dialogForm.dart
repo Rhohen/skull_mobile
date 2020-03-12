@@ -121,9 +121,45 @@ class _DialogForm extends State<DialogForm> {
     if (_formKey.currentState.validate()) {
       if (this.password != null && this.password != "") {
         if (this.password == this._inputPassword) {
+          FirebaseDatabase.instance
+              .reference()
+              .child('lobbies')
+              .child(roomKey)
+              .once()
+              .then((DataSnapshot snapshot) {
+            bool emptyRoom = false;
+            Map currentLobby = new Map<String, dynamic>.from(snapshot.value);
+            emptyRoom = currentLobby.length <= 4;
+
+            LocalUser().getUser().then((userValue) {
+              User user = userValue;
+              user.isOwner = (emptyRoom) ? 'true' : 'false';
+              LobbyArguments lobbyArgs = new LobbyArguments(
+                this.roomKey,
+                user,
+                context,
+              );
+              Navigator.pushNamed(context, Lobby.routeName,
+                  arguments: lobbyArgs);
+            });
+          });
+        } else {
+          this._isPasswordInvalid = true;
+        }
+      } else {
+        FirebaseDatabase.instance
+            .reference()
+            .child('lobbies')
+            .child(roomKey)
+            .once()
+            .then((DataSnapshot snapshot) {
+          bool emptyRoom = false;
+          Map currentLobby = new Map<String, dynamic>.from(snapshot.value);
+          emptyRoom = currentLobby.length <= 4;
+
           LocalUser().getUser().then((userValue) {
             User user = userValue;
-            user.isOwner = 'true';
+            user.isOwner = (emptyRoom) ? 'true' : 'false';
             LobbyArguments lobbyArgs = new LobbyArguments(
               this.roomKey,
               user,
@@ -131,19 +167,6 @@ class _DialogForm extends State<DialogForm> {
             );
             Navigator.pushNamed(context, Lobby.routeName, arguments: lobbyArgs);
           });
-        } else {
-          this._isPasswordInvalid = true;
-        }
-      } else {
-        LocalUser().getUser().then((userValue) {
-          User user = userValue;
-          user.isOwner = 'true';
-          LobbyArguments lobbyArgs = new LobbyArguments(
-            this.roomKey,
-            user,
-            context,
-          );
-          Navigator.pushNamed(context, Lobby.routeName, arguments: lobbyArgs);
         });
       }
     }
