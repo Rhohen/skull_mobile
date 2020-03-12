@@ -107,6 +107,12 @@ class MyApp extends StatelessWidget {
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
       ],
+      theme: ThemeData(
+        primaryColor: Colors.grey[700],
+        cursorColor: Colors.grey[800],
+        accentColor: Colors.grey[600],
+        textSelectionHandleColor: Colors.grey[800],
+      ),
       home: Scaffold(
         appBar: AppBar(
           title: new Text('Skull mobile', style: TextStyle(fontSize: 20)),

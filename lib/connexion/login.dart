@@ -52,7 +52,8 @@ class _LoginPage extends State<LoginPage> {
               )
               .then(
                 (user) => {
-                  Navigator.pushNamed(context, AccueilPage.routeName),
+                  Navigator.pushReplacementNamed(
+                      context, AccueilPage.routeName),
                 },
               );
         } else {
@@ -73,8 +74,10 @@ class _LoginPage extends State<LoginPage> {
                       "score": 0
                     },
                   ).then(
-                    (onValue) =>
-                        {Navigator.pushNamed(context, AccueilPage.routeName)},
+                    (onValue) => {
+                      Navigator.pushReplacementNamed(
+                          context, AccueilPage.routeName)
+                    },
                   )
                 },
               );
@@ -241,7 +244,7 @@ class _LoginPage extends State<LoginPage> {
           shape: new RoundedRectangleBorder(
             borderRadius: new BorderRadius.circular(30.0),
           ),
-          color: Colors.blue,
+          color: Colors.grey[700],
           child: new Text(
             _isLoginForm ? 'Login' : 'Create account',
             style: new TextStyle(

@@ -92,7 +92,7 @@ class _ProfilPage extends State<ProfilPage> {
       elevation: 5.0,
       shape: new RoundedRectangleBorder(
           borderRadius: new BorderRadius.circular(30.0)),
-      color: Colors.blue,
+      color: Colors.grey[700],
       icon: Icon(
         Icons.check,
         color: Colors.white,
