@@ -30,6 +30,7 @@ class _RejoindrePage extends State<RejoindrePage> {
           availableRooms.forEach((k, v) {
             Map mapLobby = new Map<String, dynamic>.from(v);
             LobbyModel lobby = LobbyModel.from(k, mapLobby);
+            lobby.set(mapLobby.length - 4);
             _lobbyList.add(lobby);
           });
         }
@@ -127,7 +128,7 @@ class _RejoindrePage extends State<RejoindrePage> {
                     style: TextStyle(color: Colors.white),
                   ),
                   subtitle: Text(
-                    "Joueurs 0/${_lobbyList[index].nbPlayerMax}",
+                    "Joueurs ${_lobbyList[index].nbPlayers}/${_lobbyList[index].nbPlayerMax}",
                     style: TextStyle(color: Colors.white),
                   ),
                   trailing: Icon(
@@ -174,7 +175,7 @@ class _RejoindrePage extends State<RejoindrePage> {
                     style: TextStyle(color: Colors.white),
                   ),
                   subtitle: new Text(
-                    "Joueurs 0/${_filteredLobbyList[index].nbPlayerMax}",
+                    "Joueurs ${_filteredLobbyList[index].nbPlayers}/${_filteredLobbyList[index].nbPlayerMax}",
                     style: TextStyle(color: Colors.white),
                   ),
                   trailing: Icon(

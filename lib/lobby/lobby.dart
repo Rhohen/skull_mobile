@@ -46,7 +46,7 @@ class _Lobby extends State<Lobby> {
         bool emptyRoom = true;
         if (snapshot.value != null) {
           Map currentLobby = new Map<String, dynamic>.from(snapshot.value);
-          emptyRoom = currentLobby.length <= 1;
+          emptyRoom = currentLobby.length <= 4;
         }
         if (emptyRoom) {
           currentUser.isOwner = 'true';
