@@ -121,16 +121,30 @@ class _DialogForm extends State<DialogForm> {
     if (_formKey.currentState.validate()) {
       if (this.password != null && this.password != "") {
         if (this.password == this._inputPassword) {
-          Navigator.pushNamed(context, Lobby.routeName,
-              arguments: new LobbyArguments(this.roomKey,
-                  User.generate(LocalUser().getLocalPseudo()), context));
+          LocalUser().getUser().then((userValue) {
+            User user = userValue;
+            user.isOwner = 'true';
+            LobbyArguments lobbyArgs = new LobbyArguments(
+              this.roomKey,
+              user,
+              context,
+            );
+            Navigator.pushNamed(context, Lobby.routeName, arguments: lobbyArgs);
+          });
         } else {
           this._isPasswordInvalid = true;
         }
       } else {
-        Navigator.pushNamed(context, Lobby.routeName,
-            arguments: new LobbyArguments(this.roomKey,
-                User.generate(LocalUser().getLocalPseudo()), context));
+        LocalUser().getUser().then((userValue) {
+          User user = userValue;
+          user.isOwner = 'true';
+          LobbyArguments lobbyArgs = new LobbyArguments(
+            this.roomKey,
+            user,
+            context,
+          );
+          Navigator.pushNamed(context, Lobby.routeName, arguments: lobbyArgs);
+        });
       }
     }
   }
