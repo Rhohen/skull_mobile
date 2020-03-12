@@ -108,9 +108,9 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
       ],
       theme: ThemeData(
-        primaryColor: Colors.grey[700],
+        primaryColor: Colors.grey[800],
         cursorColor: Colors.grey[800],
-        accentColor: Colors.grey[600],
+        accentColor: Colors.grey[800],
         textSelectionHandleColor: Colors.grey[800],
       ),
       home: Scaffold(
