@@ -50,12 +50,6 @@ class _Lobby extends State<Lobby> {
         }
         if (emptyRoom) {
           currentUser.isOwner = 'true';
-          lobbyRef.set({
-            "name": "testgame",
-            "password": "",
-            "nbPlayerMax": 6,
-            "state": EGameState.INITIALIZING
-          });
         }
       }
       var generatedReference = lobbyRef.push();
